@@ -56,11 +56,36 @@ function getAllSourceFiles(dir) {
         const stat = fs.statSync(filePath);
         if (stat && stat.isDirectory()) {
             results = results.concat(getAllSourceFiles(filePath));
-        } else if (file.endsWith('.js') || file.endsWith('.ts') || file.endsWith('.tsx')) {
+        } else if (
+            file.endsWith('.js') || file.endsWith('.ts') || file.endsWith('.tsx') || file.endsWith('.mdx')
+        ) {
             results.push(filePath);
         }
     });
     return results;
+}
+
+// 从 MDX 内容中抽取 fenced code blocks
+function extractCodeBlocksFromMdx(content) {
+    const regex = /```([^\n]*)\n([\s\S]*?)```/g;
+    const blocks = [];
+    let match;
+    while ((match = regex.exec(content)) !== null) {
+        const lang = (match[1] || '').trim();
+        const code = match[2];
+        blocks.push({ lang, code });
+    }
+    return blocks;
+}
+
+function normalizeLang(lang) {
+    if (!lang) return '';
+    const l = lang.toLowerCase();
+    if (l === 'ts' || l === 'typescript') return 'typescript';
+    if (l === 'tsx') return 'tsx';
+    if (l === 'js' || l === 'javascript') return 'javascript';
+    if (l === 'jsx') return 'jsx';
+    return lang;
 }
 
 function getAllYmlFiles(dir) {
@@ -116,23 +141,45 @@ function mergeFiles() {
         merged += fs.readFileSync(readmeFile, 'utf-8') + '\n```\n\n';
     }
 
-    // 合并 JavaScript/TypeScript 源文件
+    // 合并 JavaScript/TypeScript/MDX 源文件
     if (sourceFiles.length > 0) {
-        merged += '## JavaScript/TypeScript Source Files\n\n';
+        merged += '## JavaScript/TypeScript/MDX Source Files\n\n';
         sourceFiles.forEach(file => {
             const relPath = path.relative(process.cwd(), file).replace(/\\/g, '/');
             merged += `<-- ./${relPath} -->\n`;
 
-            // 根据文件扩展名选择合适的代码块类型
-            if (file.endsWith('.js')) {
-                merged += '```javascript\n';
-            } else if (file.endsWith('.ts')) {
-                merged += '```typescript\n';
-            } else if (file.endsWith('.tsx')) {
-                merged += '```tsx\n';
-            }
+            if (file.endsWith('.mdx')) {
+                // 插入原始 MDX 内容作为 markdown
+                merged += '```mdx\n';
+                const content = fs.readFileSync(file, 'utf-8');
+                merged += content + '\n```\n\n';
 
-            merged += fs.readFileSync(file, 'utf-8') + '\n```\n\n';
+                // 提取并插入 fenced code blocks（只包含常见的前端语言）
+                const blocks = extractCodeBlocksFromMdx(content);
+                if (blocks.length > 0) {
+                    merged += `### Extracted code blocks from ./${relPath}\n\n`;
+                    blocks.forEach((b, idx) => {
+                        const lang = normalizeLang(b.lang);
+                        const fenceLang = lang || '';
+                        merged += `<!-- extracted block ${idx + 1} (lang: ${fenceLang || 'plain'}) -->\n`;
+                        merged += `
+`;
+                        merged += '```' + fenceLang + '\n';
+                        merged += b.code + '\n```\n\n';
+                    });
+                }
+            } else {
+                // 根据文件扩展名选择合适的代码块类型
+                if (file.endsWith('.js')) {
+                    merged += '```javascript\n';
+                } else if (file.endsWith('.ts')) {
+                    merged += '```typescript\n';
+                } else if (file.endsWith('.tsx')) {
+                    merged += '```tsx\n';
+                }
+
+                merged += fs.readFileSync(file, 'utf-8') + '\n```\n\n';
+            }
         });
     }
 

@@ -9,6 +9,7 @@
 		"build": "npm run style && tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
 		"style": "npm run lint && npm run format && node ./scripts/merge-styles.js --dir src/styles",
 		"mix": "node ./scripts/mix-code.js --dir ../src",
+		"clean":"node ./scripts/clean.js",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
 		"lint": "eslint --ext .ts,.js src --max-warnings=0",
 		"format": "eslint --ext .ts,.js src --fix"
