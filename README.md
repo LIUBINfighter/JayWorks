@@ -5,6 +5,19 @@
 FileView for files
 ItemView for SPA (Single Page Application)
 
+### DevOps
+
+#### Tag & Release & Changelog
+
+#### CI & Code Security
+
+Avoid innerHTML and blablabla...
+
+
+### Built-in doc
+
+80%的常用功能不应该离开工作区进行学习和操作，与其打开在线文档进行复杂的加载以及独立维护一个文档网站Repo的开销，不如做成内置的doc
+
 内置文档
 
 两层 i18n，一层是应用层字段替换，一层是交互式文档替换。即将考虑支持mdx以便使用React组件而不是笨重的SPA来进行文档呈现。
@@ -33,4 +46,4 @@ Almost perfect community plugin [Taitava/obsidian-shellcommands](github.com/Tait
 
 An opinionated plugin template [polyipseity/obsidian-plugin-template](github.com/polyipseity/obsidian-plugin-template).
 
-My plugin for guitarist [LIUBINfighter/Obsidian-Tab-Flow](github.com/LIUBINfighter/Obsidian-Tab-Flow).
+My tiny plugin for guitarist [LIUBINfighter/Obsidian-Tab-Flow](github.com/LIUBINfighter/Obsidian-Tab-Flow).
