@@ -1,5 +1,23 @@
+# tools
+# mix-code.js
+
+# cache
+merged.md
+merged*.mix.md
+merged-*.mix.md
+/scripts/mix
+
+# obsidian
+.obsidian
+*/.obsidian
+data.json
+
 # vscode
 .vscode 
+
+# repomix
+.repomix
+repomix-output.txt
 
 # Intellij
 *.iml
@@ -14,9 +32,6 @@ main.js
 
 # Exclude sourcemaps
 *.map
-
-# obsidian
-data.json
 
 # Exclude macOS Finder (System Explorer) View States
 .DS_Store
