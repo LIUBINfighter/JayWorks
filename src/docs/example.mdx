@@ -1,25 +1,35 @@
 ---
 title: "示例文档"
-description: "这是一个使用 MDX 的示例文档"
+description: "这是一个使用 MDX 的示例文档（当前阶段仅渲染 Markdown，不执行自定义组件）"
 author: "JayWorks"
 date: "2025-09-26"
 ---
 
 # 欢迎使用 JayWorks 插件
 
-这是一个 MDX 文档示例，展示了如何在 Obsidian 插件中渲染 Markdown 和 React 组件。
+这是一个 MDX 文档示例，当前阶段展示：
 
-## 功能介绍
+- Frontmatter 解析
+- 基础 Markdown 渲染
+- 尚未激活的组件标签占位说明
+
+## 功能介绍（当前可用）
 
 - 支持 Markdown 语法
-- 可以嵌入 React 组件
-- 使用 frontmatter 元数据
+- 解析 frontmatter 元数据
+- 代码块、列表、链接等常规结构
 
-## 示例组件
+## 组件占位说明
 
-下面是一个简单的按钮组件：
+计划中的交互组件（例如 `<SimpleButton />`、`<OcrPlayground />`）暂未在此阶段启用。
 
-<SimpleButton label="点击我" onClick={() => alert('按钮被点击了！')} />
+```mdx
+// 未来可用示例（暂不可执行）
+<SimpleButton label="点击我" action="notice" />
+<OcrPlayground initialText="Hello" />
+```
+
+> 后续将通过安全的 mdxJsx → HAST 转换与 action 映射恢复组件能力。
 
 ## 更多内容
 

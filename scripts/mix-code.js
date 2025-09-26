@@ -48,15 +48,15 @@ if (!fs.existsSync(srcDir)) {
 }
 
 // ## 2. 文件扫描函数
-function getAllTsFiles(dir) {
+function getAllSourceFiles(dir) {
     let results = [];
     const list = fs.readdirSync(dir);
     list.forEach(file => {
         const filePath = path.join(dir, file);
         const stat = fs.statSync(filePath);
         if (stat && stat.isDirectory()) {
-            results = results.concat(getAllTsFiles(filePath));
-        } else if (file.endsWith('.ts')) {
+            results = results.concat(getAllSourceFiles(filePath));
+        } else if (file.endsWith('.js') || file.endsWith('.ts') || file.endsWith('.tsx')) {
             results.push(filePath);
         }
     });
@@ -83,7 +83,7 @@ function getAllYmlFiles(dir) {
 
 // ## 3. 文件合并函数
 function mergeFiles() {
-    const tsFiles = getAllTsFiles(srcDir);
+    const sourceFiles = getAllSourceFiles(srcDir);
     const ymlFiles = getAllYmlFiles(githubWorkflowsDir);
     let merged = '';
 
@@ -93,7 +93,7 @@ function mergeFiles() {
         const relPath = path.relative(process.cwd(), readmeFile).replace(/\\/g, '/');
         merged += `// - ./${relPath}\n`;
     }
-    tsFiles.forEach(file => {
+    sourceFiles.forEach(file => {
         const relPath = path.relative(process.cwd(), file).replace(/\\/g, '/');
         merged += `// - ./${relPath}\n`;
     });
@@ -116,13 +116,22 @@ function mergeFiles() {
         merged += fs.readFileSync(readmeFile, 'utf-8') + '\n```\n\n';
     }
 
-    // 合并 TypeScript 文件
-    if (tsFiles.length > 0) {
-        merged += '## TypeScript Source Files\n\n';
-        tsFiles.forEach(file => {
+    // 合并 JavaScript/TypeScript 源文件
+    if (sourceFiles.length > 0) {
+        merged += '## JavaScript/TypeScript Source Files\n\n';
+        sourceFiles.forEach(file => {
             const relPath = path.relative(process.cwd(), file).replace(/\\/g, '/');
             merged += `<-- ./${relPath} -->\n`;
-            merged += '```typescript\n';
+
+            // 根据文件扩展名选择合适的代码块类型
+            if (file.endsWith('.js')) {
+                merged += '```javascript\n';
+            } else if (file.endsWith('.ts')) {
+                merged += '```typescript\n';
+            } else if (file.endsWith('.tsx')) {
+                merged += '```tsx\n';
+            }
+
             merged += fs.readFileSync(file, 'utf-8') + '\n```\n\n';
         });
     }
@@ -149,7 +158,7 @@ function mergeFiles() {
 
     fs.writeFileSync(outputFile, merged, 'utf-8');
     const ymlCount = ymlFiles.length;
-    console.log(`Merged ${tsFiles.length} ts files${fs.existsSync(stylesFile) ? ', styles.css' : ''}${fs.existsSync(readmeFile) ? ', README.md' : ''}${ymlCount > 0 ? `, ${ymlCount} yml files` : ''} into ${outputFile}`);
+    console.log(`Merged ${sourceFiles.length} source files (.js/.ts/.tsx)${fs.existsSync(stylesFile) ? ', styles.css' : ''}${fs.existsSync(readmeFile) ? ', README.md' : ''}${ymlCount > 0 ? `, ${ymlCount} yml files` : ''} into ${outputFile}`);
 }
 
 // ## 4. 主执行部分
