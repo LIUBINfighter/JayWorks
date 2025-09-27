@@ -2,7 +2,7 @@
 /* --- doc.css --- */
 /* --- JayWorks Docs (Milestone 0) --- */
 .jw-docs-layout { display:flex; flex-direction:column; height:100%; font-size:14px; }
-.jw-docs-topnav { display:flex; gap:6px; padding:0px 12px; border-bottom:1px solid var(--background-modifier-border); background:var(--background-secondary); }
+.jw-docs-topnav { display:flex; gap:6px; padding:0px 12px; border-bottom:1px solid var(--background-modifier-border); background:var(--background-primary); }
 .jw-docs-topnav button { background:transparent; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; color:var(--text-normal); font-weight:500; }
 .jw-docs-topnav button:hover { background:var(--background-modifier-hover); color:var(--text-accent); }
 .jw-docs-topnav button.active { background:var(--background-modifier-hover); color:var(--text-accent); font-weight:600; }
@@ -22,13 +22,18 @@
 .jw-cat-label { padding:6px 12px; text-decoration:none; color:var(--text-normal); cursor:pointer; border-left:3px solid transparent; }
 .jw-cat-label:hover { background:var(--background-modifier-hover); }
 .jw-cat.collapsed > .jw-cat-label { font-weight:600; }
-.jw-cat .jw-cat-caret { display:inline-block; width:12px; font-size:10px; opacity:0.6; }
+.jw-cat .jw-cat-caret { display:inline-block; width:12px; font-size:10px; opacity:0.55; transition:transform 0.18s ease; }
+.jw-cat.collapsed > .jw-cat-label .jw-cat-caret { transform:rotate(-90deg); }
 .jw-docs-submenu { list-style:none; margin:0; padding:0 0 4px 4px; }
 .jw-docs-submenu > li a { padding:4px 12px 4px 22px; font-size:13px; }
 .jw-docs-submenu > li.active a { font-weight:600; }
 /* Footer widgets */
-.jw-docs-footer-bar { display:flex; align-items:center; gap:12px; font-size:12px; }
-.jw-footer-left,.jw-footer-center,.jw-footer-right { display:flex; align-items:center; gap:12px; }
+.jw-docs-footer-bar { display:flex; align-items:flex-start; justify-content:flex-end; gap:24px; font-size:12px; }
+.jw-footer-left,.jw-footer-center,.jw-footer-right { display:flex; align-items:flex-start; gap:12px; }
+/* 调整 footer 优先级：最右侧为分页，其左侧为其他 meta/info */
+.jw-footer-right { order:3; }
+.jw-footer-center { order:2; }
+.jw-footer-left { order:1; }
 .jw-footer-prevnext { display:flex; gap:10px; }
 .jw-footer-link { text-decoration:none; color:var(--text-muted); font-size:12px; }
 .jw-footer-link:hover { color:var(--text-accent); }
@@ -45,6 +50,8 @@
 .jw-footer-pager-item.prev { text-align:left; }
 .jw-footer-pager-item.next { text-align:right; }
 /* --- end docs styles --- */
+/* Hide status bar when docs view active */
+body.jw-docs-hide-statusbar .status-bar { display:none !important; }
 
 /* --- main.css --- */
 
