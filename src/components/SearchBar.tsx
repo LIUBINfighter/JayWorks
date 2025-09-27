@@ -79,14 +79,17 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSelect }) => {
 
   return (
     <div className="jw-search-box" ref={boxRef}>
-      <input
-        className="jw-search-input"
-        placeholder="搜索..."
-        value={q}
-        onChange={e => setQ(e.target.value)}
-        onFocus={() => { if (results.length) setOpen(true); }}
-        onKeyDown={handleKey}
-      />
+      <div className="jw-search-input-wrap">
+        <input
+          className="jw-search-input"
+          placeholder="搜索..."
+          value={q}
+          onChange={e => setQ(e.target.value)}
+          onFocus={() => { if (results.length) setOpen(true); }}
+          onKeyDown={handleKey}
+        />
+        <span className="jw-search-beta" title="Search feature in beta">beta</span>
+      </div>
       {open && results.length > 0 && (
         <ul className="jw-search-result-list">
           {results.map((r,i) => (
