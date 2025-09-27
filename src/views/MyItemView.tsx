@@ -7,6 +7,8 @@ import { getComponentMap } from '../components/registry';
 import { ShellLayout } from '../components/ShellLayout';
 import { Sidebar } from '../components/Sidebar';
 import { TopNav } from '../components/TopNav';
+import { SearchBar } from '../components/SearchBar';
+import { highlightTerms, clearHighlights } from '../utils/highlight';
 import { NAV_GROUPS } from '../docs/navigation';
 import { getFooterWidgets } from '../docs/footerWidgets';
 
@@ -64,6 +66,7 @@ const DocsApp: React.FC = () => {
   const [contentEl, setContentEl] = useState<React.ReactElement | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [searchTokens, setSearchTokens] = useState<string[]>([]);
 
   useEffect(() => {
     if (!currentId) return;
@@ -109,6 +112,26 @@ const DocsApp: React.FC = () => {
     setCurrentId(id);
   };
 
+  // 文档渲染完成后执行高亮（若当前有搜索 tokens）
+  useEffect(() => {
+    if (!searchTokens.length) return; // 无 tokens 则跳过
+    const rootEl = document.querySelector('.jw-docs-content');
+    if (!rootEl) return;
+    // 延迟一个 tick 确保内容已经挂载
+    const t = setTimeout(() => {
+      highlightTerms(rootEl as HTMLElement, searchTokens).catch(console.error);
+    }, 30);
+    return () => clearTimeout(t);
+  }, [contentEl, searchTokens]);
+
+  // 非搜索来源的导航（Sidebar/分页）清除高亮
+  const navigateWithoutSearch = (id: string) => {
+    setSearchTokens([]);
+    const rootEl = document.querySelector('.jw-docs-content');
+    if (rootEl) { clearHighlights(rootEl as HTMLElement).catch(()=>{}); }
+    selectDoc(id);
+  };
+
   // 如果当前文档不在当前组，自动切到该组首篇
   useEffect(() => {
     if (!currentId) return;
@@ -127,7 +150,7 @@ const DocsApp: React.FC = () => {
 
   const currentDoc = currentId ? docRegistry.getDoc(currentId) : undefined;
   const widgets = getFooterWidgets();
-  const ctxFactory = () => ({ doc: currentDoc, groupId: currentGroup, select: selectDoc });
+  const ctxFactory = () => ({ doc: currentDoc, groupId: currentGroup, select: navigateWithoutSearch });
   // Footer 顺序调整：最右侧放分页(prev/next)，其左侧放 meta（即：right -> left 的视觉优先级）
   const rightWidgets = widgets.filter(w => (w.align ?? 'left') === 'right').filter(w => !w.when || w.when(ctxFactory()));
   const leftWidgets = widgets.filter(w => (w.align ?? 'left') === 'left').filter(w => !w.when || w.when(ctxFactory()));
@@ -148,8 +171,13 @@ const DocsApp: React.FC = () => {
 
   return (
     <ShellLayout
-  sidebar={<Sidebar currentId={currentId} docs={groupDocs} groupId={currentGroup} onSelect={selectDoc} />}
-      header={<TopNav currentGroup={currentGroup} onChange={handleGroupChange} />}
+      sidebar={<Sidebar currentId={currentId} docs={groupDocs} groupId={currentGroup} onSelect={navigateWithoutSearch} />}
+      header={
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
+          <TopNav currentGroup={currentGroup} onChange={(gid)=>{ setSearchTokens([]); handleGroupChange(gid); }} />
+          <SearchBar onSelect={(id, tokens)=>{ setSearchTokens(tokens); selectDoc(id); }} />
+        </div>
+      }
       footer={footer}
     >
       <ErrorBoundary>
