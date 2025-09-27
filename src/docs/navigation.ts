@@ -1,3 +1,5 @@
+// Root README (outside docs/) as first tab doc
+import rootReadme from '../../README.md';
 import demo from './demo/demo.mdx';
 import example from './demo/example.mdx';
 // dev 分组文档
@@ -39,6 +41,7 @@ export interface NavGroup {
 
 // MDX 源映射（与 import 名称对应）
 export const MDX_SOURCES: Record<string, string | any> = {
+  'readme': rootReadme, // root README.md
   demo,
   example,
   'mdx-component-debug': mdxComponentDebug,
@@ -55,6 +58,8 @@ export const NAV_GROUPS: NavGroup[] = [
     id: 'demo',
     label: 'Demo',
     items: [
+      // Insert README as the first document (pseudo file path points to root)
+      { id: 'readme', file: '../README.md', label: 'README' },
       { id: 'demo', file: 'demo/demo.mdx', label: '示例文档' },
       { id: 'example', file: 'demo/example.mdx', label: '第二篇示例' },
     ],
