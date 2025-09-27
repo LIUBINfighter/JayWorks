@@ -10,6 +10,8 @@ export interface DocMeta {
   order?: number;
   tags?: string[];
   updated?: number;        // 时间戳（可选）
+  sourceType?: 'embedded' | 'vault'; // 来源类型（后续可扩展 remote/version）
+  filePath?: string;       // 如果来自 vault，记录绝对或相对路径
 }
 
 export interface CompiledDoc {
@@ -30,4 +32,27 @@ export interface DocRegistry {
   getDocIds(): string[];
   getDoc(id: string): DocRecord | undefined;
   list(): DocRecord[];
+}
+
+// Provider 抽象（Milestone 1 引入）
+export interface DocSourceProvider {
+  name: string;
+  /** 返回所有文档元信息（不含 raw），必要时可缓存。 */
+  listMeta(): Promise<DocMeta[]> | DocMeta[];
+  /** 按 id 加载原始内容（可能基于 meta.filePath）。 */
+  loadRaw(meta: DocMeta): Promise<string> | string;
+  /** 可选：监听底层变化，调用回调以触发刷新。返回取消函数。 */
+  watch?(onInvalidate: (id?: string) => void): () => void;
+}
+
+// 搜索相关（预留占位；后续实现真正索引结构）
+export interface SearchHit {
+  id: string;
+  score: number;
+  excerpt: string;
+}
+
+export interface SearchIndex {
+  build(records: DocRecord[]): void;
+  query(q: string): SearchHit[];
 }

@@ -1,0 +1,12 @@
+/* --- JayWorks Docs (Milestone 0) --- */
+.jw-docs-layout { display:flex; flex-direction:column; height:100%; font-size:14px; }
+.jw-docs-header { padding:6px 12px; border-bottom:1px solid var(--background-modifier-border); font-weight:600; }
+.jw-docs-main { flex:1; display:flex; overflow:hidden; }
+.jw-docs-sidebar { width:200px; border-right:1px solid var(--background-modifier-border); overflow:auto; padding:4px 0; }
+.jw-docs-content { flex:1; overflow:auto; padding:12px 20px 40px; }
+.jw-docs-footer { border-top:1px solid var(--background-modifier-border); padding:4px 8px; text-align:right; }
+.jw-docs-menu { list-style:none; margin:0; padding:0; }
+.jw-docs-menu li a { display:block; padding:6px 12px; text-decoration:none; color:var(--text-normal); border-left:3px solid transparent; }
+.jw-docs-menu li.active a { background:var(--background-modifier-hover); border-left-color:var(--text-accent); font-weight:600; }
+.jw-docs-menu li a:hover { background:var(--background-modifier-hover); }
+/* --- end docs styles --- */
