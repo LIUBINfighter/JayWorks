@@ -1,8 +1,11 @@
 import { ItemView } from 'obsidian';
 import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
+import { docRegistry } from '../docs/registry';
 import { renderMdxToReact } from '../utils/unifiedMdx';
 import { getComponentMap } from '../components/registry';
+import { ShellLayout } from '../components/ShellLayout';
+import { Sidebar } from '../components/Sidebar';
 
 class MyItemView extends ItemView {
 	root: ReturnType<typeof createRoot> | null = null;
@@ -19,11 +22,11 @@ class MyItemView extends ItemView {
 		return 'document';
 	}
 
-	async onOpen() {
-		const container = this.containerEl.children[1];
-		this.root = createRoot(container);
-		this.root.render(<MyReactComponent />);
-	}
+  async onOpen() {
+    const container = this.containerEl.children[1];
+    this.root = createRoot(container);
+    this.root.render(<DocsApp />);
+  }
 
 	async onClose() {
 		if (this.root) {
@@ -32,73 +35,65 @@ class MyItemView extends ItemView {
 	}
 }
 
-const demoMdx = `---
-title: 组件演示 (Unified)
-description: MDX + 受控白名单组件（不执行表达式属性）
-author: JayWorks
-date: "2025-09-26"
----
-
-# 自定义组件白名单演示
-
-下面展示通过 **remark-mdx → remark-rehype(passThrough) → 自定义转换 → rehype-react** 管线渲染的组件。
-
-<SimpleButton label="点我" />
-
-<OcrPlayground initialText="Hello MDX" />
-
-> 注意：属性仅支持字符串/布尔字面量；\`onClick\` 等表达式被忽略。
-
----
-
-## 能力说明
-- 支持 frontmatter 解析
-- 支持普通 Markdown（列表、代码块、强调等）
-- 支持受控白名单组件（字符串/布尔 props）
-- 暂不支持内联 JS 表达式 / 函数属性
-
-## 后续计划
-1. Action 字符串 → 事件处理映射（安全替代表达式）。
-2. 受控上下文（OCR 状态 / Notice API 注入）。
-3. 组件渲染缓存与性能优化。
-4. 限制文档 (mdx-limitations.mdx)。
-`;
-
-const MyReactComponent: React.FC = () => {
+const DocsApp: React.FC = () => {
+  const ids = docRegistry.getDocIds();
+  const initial = ids[0];
+  const [currentId, setCurrentId] = useState<string>(initial);
   const [frontmatter, setFrontmatter] = useState<Record<string, any>>({});
   const [contentEl, setContentEl] = useState<React.ReactElement | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
+    if (!currentId) return;
+    setLoading(true); setError(null);
     try {
-      const { frontmatter: fm, element } = renderMdxToReact(demoMdx, { components: getComponentMap() });
-      const normalized: Record<string, any> = {};
-      for (const [k, v] of Object.entries(fm)) {
-        if (v instanceof Date) normalized[k] = (v as Date).toISOString().slice(0,10); else if (typeof v === 'object' && v !== null) normalized[k] = JSON.stringify(v); else normalized[k] = v;
+      const rec = docRegistry.getDoc(currentId);
+      if (!rec) throw new Error('文档不存在');
+      if (rec.status === 'error') throw new Error(rec.error || '解析失败');
+      if (rec.compiled) {
+        const { frontmatter: fm, element } = rec.compiled;
+        const normalized: Record<string, any> = {};
+        for (const [k, v] of Object.entries(fm)) {
+          if (v instanceof Date) normalized[k] = (v as Date).toISOString().slice(0,10); else if (typeof v === 'object' && v !== null) normalized[k] = JSON.stringify(v); else normalized[k] = v;
+        }
+        setFrontmatter(normalized);
+        setContentEl(element);
+      } else if (rec.raw) {
+        // 兜底即时编译（正常情况下 registry 已编译）
+        const { frontmatter: fm, element } = renderMdxToReact(rec.raw, { components: getComponentMap() });
+        const normalized: Record<string, any> = {};
+        for (const [k, v] of Object.entries(fm)) {
+          if (v instanceof Date) normalized[k] = (v as Date).toISOString().slice(0,10); else if (typeof v === 'object' && v !== null) normalized[k] = JSON.stringify(v); else normalized[k] = v;
+        }
+        setFrontmatter(normalized);
+        setContentEl(element);
       }
-      setFrontmatter(normalized);
-      setContentEl(element);
     } catch (e: any) {
       console.error(e); setError(e?.message || '渲染失败');
     } finally { setLoading(false); }
-  }, []);
-
-  if (loading) return <div>Loading MDX...</div>;
-  if (error) return <div style={{ color: 'var(--text-error)' }}>错误: {error}</div>;
+  }, [currentId]);
 
   return (
-    <ErrorBoundary>
-      <div>
-        <h1>{frontmatter.title || '文档'}</h1>
-        <p><strong>描述:</strong> {frontmatter.description}</p>
-        <p><strong>作者:</strong> {frontmatter.author}</p>
-        <p><strong>日期:</strong> {frontmatter.date}</p>
-        <div style={{ borderTop: '1px solid var(--background-modifier-border)', marginTop: 12, paddingTop: 12 }}>
-          {contentEl}
-        </div>
-      </div>
-    </ErrorBoundary>
+    <ShellLayout
+      sidebar={<Sidebar currentId={currentId} onSelect={setCurrentId} />}
+      header={<div className="jw-docs-hdr">Docs</div>}
+      footer={<div style={{fontSize:'0.75em',opacity:0.6,padding:'4px 8px'}}>内嵌示例（Milestone 0）</div>}
+    >
+      <ErrorBoundary>
+        {loading && <div>加载中...</div>}
+        {error && <div style={{ color: 'var(--text-error)' }}>错误: {error}</div>}
+        {!loading && !error && (
+          <div>
+            <h1>{frontmatter.title || '文档'}</h1>
+            {frontmatter.description && <p style={{marginTop:-8,opacity:0.8}}>{frontmatter.description}</p>}
+            <div style={{ borderTop: '1px solid var(--background-modifier-border)', marginTop: 12, paddingTop: 12 }}>
+              {contentEl}
+            </div>
+          </div>
+        )}
+      </ErrorBoundary>
+    </ShellLayout>
   );
 };
 
