@@ -6,6 +6,8 @@ import { renderMdxToReact } from '../utils/unifiedMdx';
 import { getComponentMap } from '../components/registry';
 import { ShellLayout } from '../components/ShellLayout';
 import { Sidebar } from '../components/Sidebar';
+import { TopNav } from '../components/TopNav';
+import { NAV_GROUPS } from '../docs/navigation';
 
 class MyItemView extends ItemView {
 	root: ReturnType<typeof createRoot> | null = null;
@@ -36,9 +38,11 @@ class MyItemView extends ItemView {
 }
 
 const DocsApp: React.FC = () => {
-  const ids = docRegistry.getDocIds();
-  const initial = ids[0];
-  const [currentId, setCurrentId] = useState<string>(initial);
+  const allIds = docRegistry.getDocIds();
+  const firstGroup = NAV_GROUPS[0];
+  const firstDocId = allIds.find(id => docRegistry.getDoc(id)?.meta.groupId === firstGroup.id);
+  const [currentGroup, setCurrentGroup] = useState<string>(firstGroup.id);
+  const [currentId, setCurrentId] = useState<string>(firstDocId || allIds[0]);
   const [frontmatter, setFrontmatter] = useState<Record<string, any>>({});
   const [contentEl, setContentEl] = useState<React.ReactElement | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -74,11 +78,29 @@ const DocsApp: React.FC = () => {
     } finally { setLoading(false); }
   }, [currentId]);
 
+  const groupDocs = docRegistry.list().filter(r => r.meta.groupId === currentGroup);
+
+  // 如果当前文档不在当前组，自动切到该组首篇
+  useEffect(() => {
+    if (!currentId) return;
+    const rec = docRegistry.getDoc(currentId);
+    if (rec && rec.meta.groupId !== currentGroup) {
+      const firstInGroup = groupDocs[0];
+      if (firstInGroup) setCurrentId(firstInGroup.meta.id);
+    }
+  }, [currentGroup]);
+
+  const handleGroupChange = (gid: string) => {
+    setCurrentGroup(gid);
+    const first = docRegistry.list().find(r => r.meta.groupId === gid);
+    if (first) setCurrentId(first.meta.id);
+  };
+
   return (
     <ShellLayout
-      sidebar={<Sidebar currentId={currentId} onSelect={setCurrentId} />}
-      header={<div className="jw-docs-hdr">Docs</div>}
-      footer={<div style={{fontSize:'0.75em',opacity:0.6,padding:'4px 8px'}}>内嵌示例（Milestone 0）</div>}
+      sidebar={<Sidebar currentId={currentId} docs={groupDocs} onSelect={setCurrentId} />}
+      header={<TopNav currentGroup={currentGroup} onChange={handleGroupChange} />}
+      footer={<div style={{fontSize:'0.75em',opacity:0.6,padding:'4px 8px'}}>内嵌示例（导航分组）</div>}
     >
       <ErrorBoundary>
         {loading && <div>加载中...</div>}

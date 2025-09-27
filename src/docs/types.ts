@@ -12,6 +12,9 @@ export interface DocMeta {
   updated?: number;        // 时间戳（可选）
   sourceType?: 'embedded' | 'vault'; // 来源类型（后续可扩展 remote/version）
   filePath?: string;       // 如果来自 vault，记录绝对或相对路径
+  groupId?: string;        // 所属导航组
+  navLabel?: string;       // 导航显示名（覆盖 title）
+  draft?: boolean;         // draft: true 时不渲染
 }
 
 export interface CompiledDoc {

@@ -1,40 +1,44 @@
-import { DocRegistry, DocRecord, DocMeta, DocSourceProvider } from './types';
+import { DocRegistry, DocRecord, DocMeta } from './types';
 import { renderMdxToReact } from '../utils/unifiedMdx';
 import { getComponentMap } from '../components/registry';
+import { NAV_GROUPS, MDX_SOURCES } from './navigation';
 
-// ---------------- Embedded Provider ----------------
-const embeddedDocs: Record<string, string> = {
-  demo: `---\ntitle: 组件演示 (Unified)\ndescription: MDX + 受控白名单组件演示\nauthor: JayWorks\ndate: 2025-09-26\n---\n\n# 自定义组件白名单演示\n\n<SimpleButton label="点我" />\n\n<OcrPlayground initialText="Hello MDX" />\n\n> 仅支持字符串/布尔属性，表达式被忽略。\n`,
-  example: `---\ntitle: 示例文档\ndescription: 第二篇示例，演示多文档切换\n---\n\n## 二号文档\n\n这是另一份简单内容，可继续扩展。\n\n- 支持 frontmatter\n- 支持 MDX 组件 (受控)\n`
-};
-
-const embeddedProvider: DocSourceProvider = {
-  name: 'embedded',
-  listMeta() {
-    return Object.keys(embeddedDocs).map<DocMeta>(id => ({
-      id,
-      title: id,
-      slug: id,
-      sourceType: 'embedded'
-    }));
-  },
-  loadRaw(meta: DocMeta) {
-    return embeddedDocs[meta.id];
-  }
-};
-
-// ---------------- Registry Core ----------------
-const providers: DocSourceProvider[] = [embeddedProvider];
+// ---------------- Registry with declarative navigation ----------------
 const recordMap = new Map<string, DocRecord>();
 
-function ensureRecord(meta: DocMeta): DocRecord {
-  let rec = recordMap.get(meta.id);
-  if (!rec) {
-    rec = { meta: { ...meta }, status: 'idle' };
-    recordMap.set(meta.id, rec);
-  }
-  return rec;
+function normalizeMdx(mod: any, id: string): string {
+  if (typeof mod === 'string') return mod;
+  return `MDX import '${id}' was not loaded as raw text. Got type: ${typeof mod}`;
 }
+
+// 初始化：根据 NAV_GROUPS 顺序注册文档
+for (const group of NAV_GROUPS) {
+  for (const item of group.items) {
+    if (item.draft) continue; // 跳过 draft
+    const rawModule = MDX_SOURCES[item.id];
+    if (!rawModule) {
+      console.warn(`[docs] 未找到 MDX 源: ${item.id} (file=${item.file})`);
+      continue;
+    }
+    if (recordMap.has(item.id)) {
+      console.warn(`[docs] 重复的文档 id: ${item.id}`);
+      continue;
+    }
+    const meta: DocMeta = {
+      id: item.id,
+      title: item.id,
+      slug: item.id,
+      sourceType: 'embedded',
+      filePath: item.file,
+      groupId: group.id,
+      navLabel: item.label,
+    };
+    const raw = normalizeMdx(rawModule, item.id);
+    // 初始即放入 raw，延迟编译
+    recordMap.set(item.id, { meta, raw, status: 'idle' });
+  }
+}
+
 
 function compile(rec: DocRecord) {
   if (!rec.raw || rec.compiled) return;
@@ -60,54 +64,28 @@ function compile(rec: DocRecord) {
   }
 }
 
-function loadAllMeta() {
-  for (const p of providers) {
-    const metas = p.listMeta();
-    const arr = Array.isArray(metas) ? metas : [];
-    for (const m of arr) ensureRecord(m);
-  }
-}
-
-loadAllMeta();
+// 不再需要动态 provider 初始化
 
 export const docRegistry: DocRegistry = {
   getDocIds() { return Array.from(recordMap.keys()); },
   getDoc(id: string) {
     const rec = recordMap.get(id);
     if (!rec) return undefined;
-    if (rec.status === 'idle') {
-      const provider = providers.find(p => p.name === rec.meta.sourceType) || embeddedProvider;
-      try {
-        const raw = provider.loadRaw(rec.meta);
-        if (typeof raw === 'string') {
-          rec.raw = raw;
-        } else {
-          // 若未来支持 Promise，这里可以升级为 async 外层 API
-          rec.status = 'error';
-          rec.error = '异步 provider 暂未支持（需升级接口）';
-        }
-      } catch (e: any) {
-        rec.status = 'error'; rec.error = e?.message || '加载失败';
-      }
-    }
+    // 仍保留 idle 状态（未来如果想支持按需加载其它来源）
     if (rec.status !== 'error') compile(rec);
     return rec;
   },
   list() {
-    return this.getDocIds()
-      .map((id: string) => this.getDoc(id)!)
-      .filter(Boolean)
-  .sort((a: DocRecord, b: DocRecord) => {
-        const ao = a.meta.order ?? 9999;
-        const bo = b.meta.order ?? 9999;
-        if (ao !== bo) return ao - bo;
-        return a.meta.title.localeCompare(b.meta.title, 'zh-CN');
-      });
+    // 直接按 NAV_GROUPS 顺序 + items 顺序返回
+    const ordered: DocRecord[] = [];
+    for (const group of NAV_GROUPS) {
+      for (const item of group.items) {
+        if (item.draft) continue;
+        const rec = recordMap.get(item.id);
+        if (rec) ordered.push(this.getDoc(rec.meta.id)!);
+      }
+    }
+    return ordered;
   }
 };
-
-export function _internalRegisterProvider(p: DocSourceProvider) {
-  providers.push(p);
-  const metas = p.listMeta();
-  if (Array.isArray(metas)) metas.forEach(m => ensureRecord(m));
-}
+// 不再导出 provider 注册（可日后新增）

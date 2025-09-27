@@ -13,6 +13,13 @@ ItemView for SPA (Single Page Application)
 
 Avoid innerHTML and blablabla...
 
+### Data Persistence
+
+loadData()
+saveData()
+这两个方法足以解决大部分问题，不要使用localstorige/indexedDB一类无法被管理的技术
+
+暂时不需要持久化视图状态到工作区。
 
 ### Built-in doc
 
@@ -22,9 +29,12 @@ Avoid innerHTML and blablabla...
 
 两层 i18n，一层是应用层字段替换，一层是交互式文档替换。即将考虑支持mdx以便使用React组件而不是笨重的SPA来进行文档呈现。
 
-获取网络资产
-1.必要内容文本，README.md 和 Changelog.md
-2.资产
+### 获取网络资产
+
+0. 初次设置提示
+1. 在SettingTab中提供配置管理资产的页签
+2. 必要内容文本，README.md 和 Changelog.md
+3. 资产通过github release打包
 
 ## Scripts
 

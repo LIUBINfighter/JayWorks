@@ -21,15 +21,12 @@ date: "2025-09-26"
 
 ## 组件占位说明
 
-计划中的交互组件（例如 `<SimpleButton />`、`<OcrPlayground />`）暂未在此阶段启用。
+下面直接演示受控组件（属性仅支持字面量）：
 
-```mdx
-// 未来可用示例（暂不可执行）
-<SimpleButton label="点击我" action="notice" />
+<SimpleButton label="点击我" />
 <OcrPlayground initialText="Hello" />
-```
 
-> 后续将通过安全的 mdxJsx → HAST 转换与 action 映射恢复组件能力。
+> 组件属性表达式仍被忽略；后续将引入 data-action 字符串映射。
 
 ## 更多内容
 
