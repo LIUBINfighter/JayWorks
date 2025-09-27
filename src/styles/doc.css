@@ -68,3 +68,9 @@ mark.jw-search-hit { background:var(--text-highlight-bg,var(--text-selection)); 
 /* --- end docs styles --- */
 /* Hide status bar when docs view active */
 body.jw-docs-hide-statusbar .status-bar { display:none !important; }
+/* Version switcher */
+.jw-version-switcher { display:flex; align-items:center; position:relative; }
+.jw-version-select { padding:4px 6px; font-size:12px; background:var(--background-secondary); color:var(--text-normal); border:1px solid var(--background-modifier-border); border-radius:6px; outline:none; }
+.jw-version-select:focus { border-color: var(--text-accent); box-shadow:0 0 0 2px rgba(100,150,250,0.15); }
+.jw-version-badge { margin-left:4px; font-size:10px; padding:2px 5px; border-radius:4px; background:var(--background-modifier-hover); color:var(--text-accent); font-weight:600; letter-spacing:0.5px; }
+.jw-version-badge.beta { background:var(--background-modifier-hover); }

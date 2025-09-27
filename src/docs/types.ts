@@ -15,6 +15,11 @@ export interface DocMeta {
   groupId?: string;        // 所属导航组
   navLabel?: string;       // 导航显示名（覆盖 title）
   draft?: boolean;         // draft: true 时不渲染
+  // ---- Versioning (lightweight) ----
+  version?: string;        // 真实快照版本号，如 '3.2.1' 或 '3.2.x-beta'
+  alias?: string;          // 别名：'latest' | 'next' | 'v2' 等
+  track?: number;          // 主版本号 (major) 便于归档/排序
+  isPreRelease?: boolean;  // 标记是否预发布 (beta / next)
 }
 
 export interface CompiledDoc {

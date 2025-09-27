@@ -1,0 +1,17 @@
+{
+  "aliases": {
+    "latest": "0.0.0",  
+    "next": null
+  },
+  "tracks": [
+    {
+      "major": 0,
+      "snapshot": "0.0.0",
+      "stable": true
+    }
+  ],
+  "meta": {
+    "description": "Lightweight version manifest. Update aliases.latest to point to the current stable snapshot, set aliases.next when a beta exists.",
+    "updated": "${DATE}"  
+  }
+}

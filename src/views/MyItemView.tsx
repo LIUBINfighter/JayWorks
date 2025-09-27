@@ -1,7 +1,8 @@
 import { ItemView } from 'obsidian';
 import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import { docRegistry } from '../docs/registry';
+// Use versioned registry to support version alias switching
+import { versionedRegistry } from '../docs/versionedRegistry';
 import { renderMdxToReact } from '../utils/unifiedMdx';
 import { getComponentMap } from '../components/registry';
 import { ShellLayout } from '../components/ShellLayout';
@@ -10,6 +11,7 @@ import { TopNav } from '../components/TopNav';
 import { SearchBar } from '../components/SearchBar';
 import { highlightTerms, clearHighlights } from '../utils/highlight';
 import { NAV_GROUPS } from '../docs/navigation';
+import { VersionSwitcher } from '../components/VersionSwitcher';
 import { getFooterWidgets } from '../docs/footerWidgets';
 
 class MyItemView extends ItemView {
@@ -57,9 +59,9 @@ class MyItemView extends ItemView {
 }
 
 const DocsApp: React.FC = () => {
-  const allIds = docRegistry.getDocIds();
+  const allIds = versionedRegistry.getDocIds();
   const firstGroup = NAV_GROUPS[0];
-  const firstDocId = allIds.find(id => docRegistry.getDoc(id)?.meta.groupId === firstGroup.id);
+  const firstDocId = allIds.find(id => versionedRegistry.getDoc(id)?.meta.groupId === firstGroup.id);
   const [currentGroup, setCurrentGroup] = useState<string>(firstGroup.id);
   const [currentId, setCurrentId] = useState<string>(firstDocId || allIds[0]);
   const [frontmatter, setFrontmatter] = useState<Record<string, any>>({});
@@ -72,7 +74,7 @@ const DocsApp: React.FC = () => {
     if (!currentId) return;
     setLoading(true); setError(null);
     try {
-      const rec = docRegistry.getDoc(currentId);
+  const rec = versionedRegistry.getDoc(currentId);
       if (!rec) throw new Error('文档不存在');
       if (rec.status === 'error') throw new Error(rec.error || '解析失败');
       if (rec.compiled) {
@@ -98,11 +100,11 @@ const DocsApp: React.FC = () => {
     } finally { setLoading(false); }
   }, [currentId]);
 
-  const groupDocs = docRegistry.list().filter(r => r.meta.groupId === currentGroup);
+  const groupDocs = versionedRegistry.list().filter(r => r.meta.groupId === currentGroup);
 
   // 统一的文档选择：如果目标文档属于其它 group，同步切换 group，再设置当前文档
   const selectDoc = (id: string) => {
-    const rec = docRegistry.getDoc(id);
+  const rec = versionedRegistry.getDoc(id);
     if (rec) {
       const gid = rec.meta.groupId;
       if (gid && gid !== currentGroup) {
@@ -135,7 +137,7 @@ const DocsApp: React.FC = () => {
   // 如果当前文档不在当前组，自动切到该组首篇
   useEffect(() => {
     if (!currentId) return;
-    const rec = docRegistry.getDoc(currentId);
+    const rec = versionedRegistry.getDoc(currentId);
     if (rec && rec.meta.groupId !== currentGroup) {
       const firstInGroup = groupDocs[0];
       if (firstInGroup) setCurrentId(firstInGroup.meta.id);
@@ -144,11 +146,11 @@ const DocsApp: React.FC = () => {
 
   const handleGroupChange = (gid: string) => {
     setCurrentGroup(gid);
-    const first = docRegistry.list().find(r => r.meta.groupId === gid);
+  const first = versionedRegistry.list().find(r => r.meta.groupId === gid);
     if (first) setCurrentId(first.meta.id);
   };
 
-  const currentDoc = currentId ? docRegistry.getDoc(currentId) : undefined;
+  const currentDoc = currentId ? versionedRegistry.getDoc(currentId) : undefined;
   const widgets = getFooterWidgets();
   const ctxFactory = () => ({ doc: currentDoc, groupId: currentGroup, select: navigateWithoutSearch });
   // Footer 顺序调整：最右侧放分页(prev/next)，其左侧放 meta（即：right -> left 的视觉优先级）
@@ -175,7 +177,23 @@ const DocsApp: React.FC = () => {
       header={
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
           <TopNav currentGroup={currentGroup} onChange={(gid)=>{ setSearchTokens([]); handleGroupChange(gid); }} />
-          <SearchBar onSelect={(id, tokens)=>{ setSearchTokens(tokens); selectDoc(id); }} />
+          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+            <VersionSwitcher onChange={() => {
+              // 切换版本后重新获取当前文档（可能内容版本语义变更）
+              if (currentId) {
+                const rec = versionedRegistry.getDoc(currentId);
+                if (!rec) {
+                  // 如果当前文档在新版本不存在，则跳转该组第一篇
+                  const firstInGroup = versionedRegistry.list().find(r => r.meta.groupId === currentGroup);
+                  if (firstInGroup) setCurrentId(firstInGroup.meta.id);
+                } else {
+                  // 强制触发 effect 重新渲染
+                  setCurrentId(rec.meta.id);
+                }
+              }
+            }} />
+            <SearchBar onSelect={(id, tokens)=>{ setSearchTokens(tokens); selectDoc(id); }} />
+          </div>
         </div>
       }
       footer={footer}
