@@ -1,5 +1,6 @@
 import React from 'react';
 import { FooterWidget, FooterWidgetContext } from './types';
+import FooterMeta from '../components/FooterMeta';
 import { docRegistry } from './registry';
 
 const widgets: FooterWidget[] = [];
@@ -46,20 +47,9 @@ registerFooterWidget({
 // Meta info widget (updated + reading time)
 registerFooterWidget({
   id: 'meta-info',
-  order: 20,
+  order: 9,
   align: 'right',
-  render: ({ doc }: FooterWidgetContext) => {
-    if (!doc) return null;
-    const text = doc.raw || '';
-    const plain = text.replace(/```[\s\S]*?```/g,'');
-    const words = plain.replace(/[#>*`\\\-\n\r]/g,' ').split(/\s+/).filter(Boolean).length;
-    const minutes = Math.max(1, Math.round(words / 500));
-    const updated = doc.meta.updated ? new Date(doc.meta.updated).toISOString().slice(0,10) : undefined;
-    return (
-      <div className="jw-footer-meta" title={`约 ${words} 词`}>
-        {updated && <span>更新 {updated}</span>}
-        <span style={{marginLeft: updated?8:0}}>阅读 {minutes} 分钟</span>
-      </div>
-    );
-  }
+  render: ({ doc }: FooterWidgetContext) => (
+    <FooterMeta doc={doc} />
+  )
 });
