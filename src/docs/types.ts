@@ -20,6 +20,10 @@ export interface DocMeta {
   alias?: string;          // 别名：'latest' | 'next' | 'v2' 等
   track?: number;          // 主版本号 (major) 便于归档/排序
   isPreRelease?: boolean;  // 标记是否预发布 (beta / next)
+  // ---- i18n (lightweight) ----
+  locale?: string;         // 'zh-CN' | 'en' | etc.
+  canonicalId?: string;    // 语言无关的逻辑 ID（导航使用该 ID）
+  isFallback?: boolean;    // 若当前 locale 缺失，回退到默认语言时标记
 }
 
 export interface CompiledDoc {

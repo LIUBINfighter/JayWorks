@@ -76,6 +76,11 @@ body.jw-docs-hide-statusbar .status-bar { display:none !important; }
 .jw-version-select:focus { border-color: var(--text-accent); box-shadow:0 0 0 2px rgba(100,150,250,0.15); }
 .jw-version-badge { margin-left:4px; font-size:10px; padding:2px 5px; border-radius:4px; background:var(--background-modifier-hover); color:var(--text-accent); font-weight:600; letter-spacing:0.5px; }
 .jw-version-badge.beta { background:var(--background-modifier-hover); }
+/* Locale switcher */
+.jw-locale-switcher { display:flex; align-items:center; position:relative; }
+.jw-locale-select { padding:4px 6px; font-size:12px; background:var(--background-secondary); color:var(--text-normal); border:1px solid var(--background-modifier-border); border-radius:6px; outline:none; }
+.jw-locale-select:focus { border-color: var(--text-accent); box-shadow:0 0 0 2px rgba(100,150,250,0.15); }
+.jw-locale-badge { margin-left:4px; font-size:10px; padding:2px 5px; border-radius:4px; background:var(--background-modifier-hover); color:var(--text-accent); font-weight:600; letter-spacing:0.5px; }
 
 /* --- main.css --- */
 

@@ -2,6 +2,7 @@
 import rootReadme from '../../README.md';
 import demo from './demo/demo.mdx';
 import example from './demo/example.mdx';
+import exampleEn from './demo/example.en.mdx';
 // dev 分组文档
 import mdxComponentDebug from './dev/mdx-component-debug.mdx';
 import unifiedPlan from './dev/unified-plan.mdx';
@@ -45,6 +46,7 @@ export const MDX_SOURCES: Record<string, string | any> = {
   'readme': rootReadme, // root README.md
   demo,
   example,
+  'example.en': exampleEn,
   'mdx-component-debug': mdxComponentDebug,
   'unified-plan': unifiedPlan,
   'style-guide': styleGuideReadme,
