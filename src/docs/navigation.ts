@@ -8,6 +8,7 @@ import styleGuideReadme from './dev/style-guide/readme.mdx';
 import styleGuideObsidian from './dev/style-guide/obsidian.mdx';
 // schema 参考文档
 import frontmatterSchema from './dev/frontformatter-schema.mdx';
+import configuration from './dev/configuration.mdx';
 
 export interface NavDocItem {
   type?: 'doc';        // 可选标记
@@ -45,6 +46,7 @@ export const MDX_SOURCES: Record<string, string | any> = {
   'style-guide': styleGuideReadme,
   'style-guide-obsidian': styleGuideObsidian,
   'frontformatter-schema': frontmatterSchema,
+  'configuration': configuration,
 };
 
 // 顶部导航分组配置（按数组顺序呈现）
@@ -75,6 +77,7 @@ export const NAV_GROUPS: NavGroup[] = [
       }
       ,
       { id: 'frontformatter-schema', file: 'dev/frontformatter-schema.mdx', label: 'Frontmatter Schema' }
+      ,{ id: 'configuration', file: 'dev/configuration.mdx', label: '配置与使用' }
     ],
   },
 ];
