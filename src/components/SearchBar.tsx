@@ -60,6 +60,23 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSelect }) => {
     }
   };
 
+  // active 项自动滚动到可视区域
+  useEffect(() => {
+    if (!open) return;
+    if (active < 0) return;
+    const list = boxRef.current?.querySelector('.jw-search-result-list');
+    if (!list) return;
+    const item = list.children[active] as HTMLElement | undefined;
+    if (!item) return;
+    const listRect = (list as HTMLElement).getBoundingClientRect();
+    const itemRect = item.getBoundingClientRect();
+    if (itemRect.top < listRect.top) {
+      item.scrollIntoView({ block: 'nearest' });
+    } else if (itemRect.bottom > listRect.bottom) {
+      item.scrollIntoView({ block: 'nearest' });
+    }
+  }, [active, open]);
+
   return (
     <div className="jw-search-box" ref={boxRef}>
       <input
