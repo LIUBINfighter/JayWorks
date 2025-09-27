@@ -1,7 +1,7 @@
 import { DocRegistry, DocRecord, DocMeta } from './types';
 import { renderMdxToReact } from '../utils/unifiedMdx';
 import { getComponentMap } from '../components/registry';
-import { NAV_GROUPS, MDX_SOURCES } from './navigation';
+import { NAV_GROUPS, MDX_SOURCES, NavEntry } from './navigation';
 
 // ---------------- Registry with declarative navigation ----------------
 const recordMap = new Map<string, DocRecord>();
@@ -11,32 +11,44 @@ function normalizeMdx(mod: any, id: string): string {
   return `MDX import '${id}' was not loaded as raw text. Got type: ${typeof mod}`;
 }
 
-// 初始化：根据 NAV_GROUPS 顺序注册文档
-for (const group of NAV_GROUPS) {
-  for (const item of group.items) {
-    if (item.draft) continue; // 跳过 draft
-    const rawModule = MDX_SOURCES[item.id];
-    if (!rawModule) {
-      console.warn(`[docs] 未找到 MDX 源: ${item.id} (file=${item.file})`);
-      continue;
-    }
-    if (recordMap.has(item.id)) {
-      console.warn(`[docs] 重复的文档 id: ${item.id}`);
-      continue;
-    }
-    const meta: DocMeta = {
-      id: item.id,
-      title: item.id,
-      slug: item.id,
-      sourceType: 'embedded',
-      filePath: item.file,
-      groupId: group.id,
-      navLabel: item.label,
-    };
-    const raw = normalizeMdx(rawModule, item.id);
-    // 初始即放入 raw，延迟编译
-    recordMap.set(item.id, { meta, raw, status: 'idle' });
+function registerDoc(groupId: string, docId: string, file: string, label?: string, draft?: boolean) {
+  if (draft) return;
+  const rawModule = MDX_SOURCES[docId];
+  if (!rawModule) {
+    console.warn(`[docs] 未找到 MDX 源: ${docId} (file=${file})`);
+    return;
   }
+  if (recordMap.has(docId)) {
+    console.warn(`[docs] 重复的文档 id: ${docId}`);
+    return;
+  }
+  const meta: DocMeta = {
+    id: docId,
+    title: docId,
+    slug: docId,
+    sourceType: 'embedded',
+    filePath: file,
+    groupId,
+    navLabel: label,
+  };
+  const raw = normalizeMdx(rawModule, docId);
+  recordMap.set(docId, { meta, raw, status: 'idle' });
+}
+
+function walkEntries(groupId: string, entry: NavEntry) {
+  if ((entry as any).type === 'category') {
+    const cat: any = entry;
+    if (cat.draft) return;
+    for (const doc of cat.items) registerDoc(groupId, doc.id, doc.file, doc.label, doc.draft);
+  } else {
+    const doc = entry as any;
+    registerDoc(groupId, doc.id, doc.file, doc.label, doc.draft);
+  }
+}
+
+// 初始化：根据 NAV_GROUPS 顺序注册文档（递归 categories）
+for (const group of NAV_GROUPS) {
+  for (const entry of group.items) walkEntries(group.id, entry);
 }
 
 
@@ -79,10 +91,21 @@ export const docRegistry: DocRegistry = {
     // 直接按 NAV_GROUPS 顺序 + items 顺序返回
     const ordered: DocRecord[] = [];
     for (const group of NAV_GROUPS) {
-      for (const item of group.items) {
-        if (item.draft) continue;
-        const rec = recordMap.get(item.id);
-        if (rec) ordered.push(this.getDoc(rec.meta.id)!);
+      for (const entry of group.items) {
+        if ((entry as any).type === 'category') {
+          const cat: any = entry;
+            if (cat.draft) continue;
+            for (const doc of cat.items) {
+              if (doc.draft) continue;
+              const rec = recordMap.get(doc.id);
+              if (rec) ordered.push(this.getDoc(rec.meta.id)!);
+            }
+        } else {
+          const doc: any = entry;
+          if (doc.draft) continue;
+          const rec = recordMap.get(doc.id);
+          if (rec) ordered.push(this.getDoc(rec.meta.id)!);
+        }
       }
     }
     return ordered;

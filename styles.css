@@ -17,6 +17,15 @@
 .jw-docs-menu li a:hover { background:var(--background-modifier-hover); }
 /* 空状态 */
 .jw-docs-sidebar-empty { font-size:13px; color:var(--text-muted); }
+/* 分类 / 多层级 */
+.jw-docs-menu.jw-level-root > .jw-cat > .jw-cat-label { font-weight:600; opacity:0.9; display:flex; align-items:center; gap:4px; }
+.jw-cat-label { padding:6px 12px; text-decoration:none; color:var(--text-normal); cursor:pointer; border-left:3px solid transparent; }
+.jw-cat-label:hover { background:var(--background-modifier-hover); }
+.jw-cat.collapsed > .jw-cat-label { font-weight:600; }
+.jw-cat .jw-cat-caret { display:inline-block; width:12px; font-size:10px; opacity:0.6; }
+.jw-docs-submenu { list-style:none; margin:0; padding:0 0 4px 4px; }
+.jw-docs-submenu > li a { padding:4px 12px 4px 22px; font-size:13px; }
+.jw-docs-submenu > li.active a { font-weight:600; }
 /* --- end docs styles --- */
 
 /* --- main.css --- */

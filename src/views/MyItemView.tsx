@@ -98,7 +98,7 @@ const DocsApp: React.FC = () => {
 
   return (
     <ShellLayout
-      sidebar={<Sidebar currentId={currentId} docs={groupDocs} onSelect={setCurrentId} />}
+  sidebar={<Sidebar currentId={currentId} docs={groupDocs} groupId={currentGroup} onSelect={setCurrentId} />}
       header={<TopNav currentGroup={currentGroup} onChange={handleGroupChange} />}
       footer={<div style={{fontSize:'0.75em',opacity:0.6,padding:'4px 8px'}}>内嵌示例（导航分组）</div>}
     >
