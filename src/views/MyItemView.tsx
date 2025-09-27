@@ -97,6 +97,18 @@ const DocsApp: React.FC = () => {
 
   const groupDocs = docRegistry.list().filter(r => r.meta.groupId === currentGroup);
 
+  // 统一的文档选择：如果目标文档属于其它 group，同步切换 group，再设置当前文档
+  const selectDoc = (id: string) => {
+    const rec = docRegistry.getDoc(id);
+    if (rec) {
+      const gid = rec.meta.groupId;
+      if (gid && gid !== currentGroup) {
+        setCurrentGroup(gid);
+      }
+    }
+    setCurrentId(id);
+  };
+
   // 如果当前文档不在当前组，自动切到该组首篇
   useEffect(() => {
     if (!currentId) return;
@@ -115,7 +127,7 @@ const DocsApp: React.FC = () => {
 
   const currentDoc = currentId ? docRegistry.getDoc(currentId) : undefined;
   const widgets = getFooterWidgets();
-  const ctxFactory = () => ({ doc: currentDoc, groupId: currentGroup, select: setCurrentId });
+  const ctxFactory = () => ({ doc: currentDoc, groupId: currentGroup, select: selectDoc });
   // Footer 顺序调整：最右侧放分页(prev/next)，其左侧放 meta（即：right -> left 的视觉优先级）
   const rightWidgets = widgets.filter(w => (w.align ?? 'left') === 'right').filter(w => !w.when || w.when(ctxFactory()));
   const leftWidgets = widgets.filter(w => (w.align ?? 'left') === 'left').filter(w => !w.when || w.when(ctxFactory()));
@@ -136,7 +148,7 @@ const DocsApp: React.FC = () => {
 
   return (
     <ShellLayout
-      sidebar={<Sidebar currentId={currentId} docs={groupDocs} groupId={currentGroup} onSelect={setCurrentId} />}
+  sidebar={<Sidebar currentId={currentId} docs={groupDocs} groupId={currentGroup} onSelect={selectDoc} />}
       header={<TopNav currentGroup={currentGroup} onChange={handleGroupChange} />}
       footer={footer}
     >
