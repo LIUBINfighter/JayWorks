@@ -2,11 +2,11 @@
 /* --- doc.css --- */
 /* --- JayWorks Docs (Milestone 0) --- */
 .jw-docs-layout { display:flex; flex-direction:column; height:100%; font-size:14px; }
-.jw-docs-topnav { display:flex; gap:6px; padding:6px 8px; border-bottom:1px solid var(--background-modifier-border); background:var(--background-secondary); }
-.jw-docs-topnav button { background:transparent; border:1px solid var(--background-modifier-border); padding:4px 10px; border-radius:4px; cursor:pointer; color:var(--text-normal); }
-.jw-docs-topnav button.active { background:var(--background-modifier-hover); font-weight:600; color:var(--text-accent); }
-.jw-docs-topnav button:hover { background:var(--background-modifier-hover); }
-.jw-docs-header { padding:6px 12px; border-bottom:1px solid var(--background-modifier-border); font-weight:600; }
+.jw-docs-topnav { display:flex; gap:6px; padding:0px 12px; border-bottom:1px solid var(--background-modifier-border); background:var(--background-secondary); }
+.jw-docs-topnav button { background:transparent; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; color:var(--text-normal); font-weight:500; }
+.jw-docs-topnav button:hover { background:var(--background-modifier-hover); color:var(--text-accent); }
+.jw-docs-topnav button.active { background:var(--background-modifier-hover); color:var(--text-accent); font-weight:600; }
+.jw-docs-header { padding:0px 0px; border-bottom:1px solid var(--background-modifier-border); font-weight:600; }
 .jw-docs-main { flex:1; display:flex; overflow:hidden; }
 .jw-docs-sidebar { width:200px; border-right:1px solid var(--background-modifier-border); overflow:auto; padding:4px 0; }
 .jw-docs-content { flex:1; overflow:auto; padding:12px 20px 40px; }
