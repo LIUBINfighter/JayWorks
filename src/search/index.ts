@@ -72,6 +72,31 @@ function fieldBoost(mask: number): number {
   return boost || 1;
 }
 
+function makeSnippet(body: string, tokens: string[]): string | undefined {
+  if (!body) return undefined;
+  const lower = body.toLowerCase();
+  let firstIdx = -1; let matchedToken = '';
+  for (const t of tokens) {
+    const idx = lower.indexOf(t);
+    if (idx !== -1 && (firstIdx === -1 || idx < firstIdx)) { firstIdx = idx; matchedToken = t; }
+  }
+  if (firstIdx === -1) return undefined;
+  const radius = 48;
+  const start = Math.max(0, firstIdx - radius);
+  const end = Math.min(body.length, firstIdx + matchedToken.length + radius);
+  let snippet = body.slice(start, end).trim();
+  if (start > 0) snippet = '…' + snippet;
+  if (end < body.length) snippet = snippet + '…';
+  // 简单高亮标记：用 <mark> 包裹所有 tokens（不在列表 UI 用 mark.js，只是视觉提示）
+  const uniq = Array.from(new Set(tokens.filter(t => t.length >= 2))).sort((a,b)=> b.length-a.length);
+  for (const tk of uniq) {
+    const re = new RegExp(tk.replace(/[-/\\^$*+?.()|[\]{}]/g, r=>"\\"+r), 'ig');
+    snippet = snippet.replace(re, m => `<<${m}>>`); // 临时占位
+  }
+  snippet = snippet.replace(/<<([^>]+)>>/g, '<mark class="jw-search-inline-hit">$1</mark>');
+  return snippet;
+}
+
 export function querySearch(q: string, limit = 20): SearchHit[] {
   if (!built) buildIndex();
   const tokens = tokenize(q).filter(t => t.length >= 2); // MVP: 忽略单字符
@@ -92,7 +117,7 @@ export function querySearch(q: string, limit = 20): SearchHit[] {
   for (const [id, score] of scores.entries()) {
     const meta = index.meta[id];
     if (!meta) continue;
-    hits.push({ id, score, title: meta.title, description: meta.description });
+    hits.push({ id, score, title: meta.title, description: meta.description, snippet: makeSnippet(meta.body, tokens) });
   }
   hits.sort((a,b)=> b.score - a.score);
   return hits.slice(0, limit);
