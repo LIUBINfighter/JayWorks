@@ -1,11 +1,20 @@
 import { ItemView } from 'obsidian';
 import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
+import { docRegistry } from '../docs/registry';
 import { renderMdxToReact } from '../utils/unifiedMdx';
 import { getComponentMap } from '../components/registry';
+import { ShellLayout } from '../components/ShellLayout';
+import { Sidebar } from '../components/Sidebar';
+import { TopNav } from '../components/TopNav';
+import { SearchBar } from '../components/SearchBar';
+import { highlightTerms, clearHighlights } from '../utils/highlight';
+import { NAV_GROUPS } from '../docs/navigation';
+import { getFooterWidgets } from '../docs/footerWidgets';
 
 class MyItemView extends ItemView {
 	root: ReturnType<typeof createRoot> | null = null;
+  private removeActiveListener?: () => void;
 
 	getViewType(): string {
 		return 'my-item-view';
@@ -19,86 +28,172 @@ class MyItemView extends ItemView {
 		return 'document';
 	}
 
-	async onOpen() {
-		const container = this.containerEl.children[1];
-		this.root = createRoot(container);
-		this.root.render(<MyReactComponent />);
-	}
+  async onOpen() {
+    const container = this.containerEl.children[1];
+    container.addClass('jw-docs-root-view');
+    this.root = createRoot(container);
+    this.root.render(<DocsApp />);
+
+    const update = () => {
+      const active = this.app.workspace.getActiveViewOfType(MyItemView);
+      if (active === this) document.body.classList.add('jw-docs-hide-statusbar');
+      else document.body.classList.remove('jw-docs-hide-statusbar');
+    };
+    update();
+    const off = this.app.workspace.on('active-leaf-change', () => update());
+    this.registerEvent(off);
+    this.removeActiveListener = () => {
+      document.body.classList.remove('jw-docs-hide-statusbar');
+    };
+  }
 
 	async onClose() {
 		if (this.root) {
 			this.root.unmount();
 		}
+    if (this.removeActiveListener) this.removeActiveListener();
+    document.body.classList.remove('jw-docs-hide-statusbar');
 	}
 }
 
-const demoMdx = `---
-title: 组件演示 (Unified)
-description: MDX + 受控白名单组件（不执行表达式属性）
-author: JayWorks
-date: "2025-09-26"
----
-
-# 自定义组件白名单演示
-
-下面展示通过 **remark-mdx → remark-rehype(passThrough) → 自定义转换 → rehype-react** 管线渲染的组件。
-
-<SimpleButton label="点我" />
-
-<OcrPlayground initialText="Hello MDX" />
-
-> 注意：属性仅支持字符串/布尔字面量；\`onClick\` 等表达式被忽略。
-
----
-
-## 能力说明
-- 支持 frontmatter 解析
-- 支持普通 Markdown（列表、代码块、强调等）
-- 支持受控白名单组件（字符串/布尔 props）
-- 暂不支持内联 JS 表达式 / 函数属性
-
-## 后续计划
-1. Action 字符串 → 事件处理映射（安全替代表达式）。
-2. 受控上下文（OCR 状态 / Notice API 注入）。
-3. 组件渲染缓存与性能优化。
-4. 限制文档 (mdx-limitations.mdx)。
-`;
-
-const MyReactComponent: React.FC = () => {
+const DocsApp: React.FC = () => {
+  const allIds = docRegistry.getDocIds();
+  const firstGroup = NAV_GROUPS[0];
+  const firstDocId = allIds.find(id => docRegistry.getDoc(id)?.meta.groupId === firstGroup.id);
+  const [currentGroup, setCurrentGroup] = useState<string>(firstGroup.id);
+  const [currentId, setCurrentId] = useState<string>(firstDocId || allIds[0]);
   const [frontmatter, setFrontmatter] = useState<Record<string, any>>({});
   const [contentEl, setContentEl] = useState<React.ReactElement | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [searchTokens, setSearchTokens] = useState<string[]>([]);
 
   useEffect(() => {
+    if (!currentId) return;
+    setLoading(true); setError(null);
     try {
-      const { frontmatter: fm, element } = renderMdxToReact(demoMdx, { components: getComponentMap() });
-      const normalized: Record<string, any> = {};
-      for (const [k, v] of Object.entries(fm)) {
-        if (v instanceof Date) normalized[k] = (v as Date).toISOString().slice(0,10); else if (typeof v === 'object' && v !== null) normalized[k] = JSON.stringify(v); else normalized[k] = v;
+      const rec = docRegistry.getDoc(currentId);
+      if (!rec) throw new Error('文档不存在');
+      if (rec.status === 'error') throw new Error(rec.error || '解析失败');
+      if (rec.compiled) {
+        const { frontmatter: fm, element } = rec.compiled;
+        const normalized: Record<string, any> = {};
+        for (const [k, v] of Object.entries(fm)) {
+          if (v instanceof Date) normalized[k] = (v as Date).toISOString().slice(0,10); else if (typeof v === 'object' && v !== null) normalized[k] = JSON.stringify(v); else normalized[k] = v;
+        }
+        setFrontmatter(normalized);
+        setContentEl(element);
+      } else if (rec.raw) {
+        // 兜底即时编译（正常情况下 registry 已编译）
+        const { frontmatter: fm, element } = renderMdxToReact(rec.raw, { components: getComponentMap() });
+        const normalized: Record<string, any> = {};
+        for (const [k, v] of Object.entries(fm)) {
+          if (v instanceof Date) normalized[k] = (v as Date).toISOString().slice(0,10); else if (typeof v === 'object' && v !== null) normalized[k] = JSON.stringify(v); else normalized[k] = v;
+        }
+        setFrontmatter(normalized);
+        setContentEl(element);
       }
-      setFrontmatter(normalized);
-      setContentEl(element);
     } catch (e: any) {
       console.error(e); setError(e?.message || '渲染失败');
     } finally { setLoading(false); }
-  }, []);
+  }, [currentId]);
 
-  if (loading) return <div>Loading MDX...</div>;
-  if (error) return <div style={{ color: 'var(--text-error)' }}>错误: {error}</div>;
+  const groupDocs = docRegistry.list().filter(r => r.meta.groupId === currentGroup);
+
+  // 统一的文档选择：如果目标文档属于其它 group，同步切换 group，再设置当前文档
+  const selectDoc = (id: string) => {
+    const rec = docRegistry.getDoc(id);
+    if (rec) {
+      const gid = rec.meta.groupId;
+      if (gid && gid !== currentGroup) {
+        setCurrentGroup(gid);
+      }
+    }
+    setCurrentId(id);
+  };
+
+  // 文档渲染完成后执行高亮（若当前有搜索 tokens）
+  useEffect(() => {
+    if (!searchTokens.length) return; // 无 tokens 则跳过
+    const rootEl = document.querySelector('.jw-docs-content');
+    if (!rootEl) return;
+    // 延迟一个 tick 确保内容已经挂载
+    const t = setTimeout(() => {
+      highlightTerms(rootEl as HTMLElement, searchTokens).catch(console.error);
+    }, 30);
+    return () => clearTimeout(t);
+  }, [contentEl, searchTokens]);
+
+  // 非搜索来源的导航（Sidebar/分页）清除高亮
+  const navigateWithoutSearch = (id: string) => {
+    setSearchTokens([]);
+    const rootEl = document.querySelector('.jw-docs-content');
+    if (rootEl) { clearHighlights(rootEl as HTMLElement).catch(()=>{}); }
+    selectDoc(id);
+  };
+
+  // 如果当前文档不在当前组，自动切到该组首篇
+  useEffect(() => {
+    if (!currentId) return;
+    const rec = docRegistry.getDoc(currentId);
+    if (rec && rec.meta.groupId !== currentGroup) {
+      const firstInGroup = groupDocs[0];
+      if (firstInGroup) setCurrentId(firstInGroup.meta.id);
+    }
+  }, [currentGroup]);
+
+  const handleGroupChange = (gid: string) => {
+    setCurrentGroup(gid);
+    const first = docRegistry.list().find(r => r.meta.groupId === gid);
+    if (first) setCurrentId(first.meta.id);
+  };
+
+  const currentDoc = currentId ? docRegistry.getDoc(currentId) : undefined;
+  const widgets = getFooterWidgets();
+  const ctxFactory = () => ({ doc: currentDoc, groupId: currentGroup, select: navigateWithoutSearch });
+  // Footer 顺序调整：最右侧放分页(prev/next)，其左侧放 meta（即：right -> left 的视觉优先级）
+  const rightWidgets = widgets.filter(w => (w.align ?? 'left') === 'right').filter(w => !w.when || w.when(ctxFactory()));
+  const leftWidgets = widgets.filter(w => (w.align ?? 'left') === 'left').filter(w => !w.when || w.when(ctxFactory()));
+  const centerWidgets = widgets.filter(w => w.align === 'center').filter(w => !w.when || w.when(ctxFactory()));
+  const footer = (
+    <div className="jw-docs-footer-bar">
+      <div className="jw-footer-left">
+        {leftWidgets.map(w => <React.Fragment key={w.id}>{w.render(ctxFactory())}</React.Fragment>)}
+      </div>
+      <div className="jw-footer-center">
+        {centerWidgets.map(w => <React.Fragment key={w.id}>{w.render(ctxFactory())}</React.Fragment>)}
+      </div>
+      <div className="jw-footer-right">
+        {rightWidgets.map(w => <React.Fragment key={w.id}>{w.render(ctxFactory())}</React.Fragment>)}
+      </div>
+    </div>
+  );
 
   return (
-    <ErrorBoundary>
-      <div>
-        <h1>{frontmatter.title || '文档'}</h1>
-        <p><strong>描述:</strong> {frontmatter.description}</p>
-        <p><strong>作者:</strong> {frontmatter.author}</p>
-        <p><strong>日期:</strong> {frontmatter.date}</p>
-        <div style={{ borderTop: '1px solid var(--background-modifier-border)', marginTop: 12, paddingTop: 12 }}>
-          {contentEl}
+    <ShellLayout
+      sidebar={<Sidebar currentId={currentId} docs={groupDocs} groupId={currentGroup} onSelect={navigateWithoutSearch} />}
+      header={
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
+          <TopNav currentGroup={currentGroup} onChange={(gid)=>{ setSearchTokens([]); handleGroupChange(gid); }} />
+          <SearchBar onSelect={(id, tokens)=>{ setSearchTokens(tokens); selectDoc(id); }} />
         </div>
-      </div>
-    </ErrorBoundary>
+      }
+      footer={footer}
+    >
+      <ErrorBoundary>
+        {loading && <div>加载中...</div>}
+        {error && <div style={{ color: 'var(--text-error)' }}>错误: {error}</div>}
+        {!loading && !error && (
+          <div>
+            <h1>{frontmatter.title || '文档'}</h1>
+            {frontmatter.description && <p style={{marginTop:-8,opacity:0.8}}>{frontmatter.description}</p>}
+            <div style={{ borderTop: '1px solid var(--background-modifier-border)', marginTop: 12, paddingTop: 12 }}>
+              {contentEl}
+            </div>
+          </div>
+        )}
+      </ErrorBoundary>
+    </ShellLayout>
   );
 };
 

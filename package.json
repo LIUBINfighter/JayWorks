@@ -9,7 +9,7 @@
 		"build": "npm run style && tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
 		"style": "npm run lint && npm run format && node ./scripts/merge-styles.js --dir src/styles",
 		"mix": "node ./scripts/mix-code.js --dir ../src",
-		"clean":"node ./scripts/clean.js",
+		"clean": "node ./scripts/clean.js",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
 		"lint": "eslint --ext .ts,.js src --max-warnings=0",
 		"format": "eslint --ext .ts,.js src --fix"
@@ -33,14 +33,15 @@
 	"dependencies": {
 		"@types/react": "^19.1.13",
 		"@types/react-dom": "^19.1.9",
+		"gray-matter": "^4.0.3",
+		"mark.js": "^8.11.1",
 		"react": "^19.1.1",
 		"react-dom": "^19.1.1",
-		"unified": "^11.0.4",
-		"remark-parse": "^11.0.0",
+		"rehype-react": "^8.0.0",
 		"remark-frontmatter": "^5.0.0",
 		"remark-mdx": "^3.0.1",
+		"remark-parse": "^11.0.0",
 		"remark-rehype": "^11.1.0",
-		"rehype-react": "^8.0.0",
-		"gray-matter": "^4.0.3"
+		"unified": "^11.0.4"
 	}
 }
