@@ -8,6 +8,7 @@ import { ShellLayout } from '../components/ShellLayout';
 import { Sidebar } from '../components/Sidebar';
 import { TopNav } from '../components/TopNav';
 import { NAV_GROUPS } from '../docs/navigation';
+import { getFooterWidgets } from '../docs/footerWidgets';
 
 class MyItemView extends ItemView {
 	root: ReturnType<typeof createRoot> | null = null;
@@ -26,6 +27,7 @@ class MyItemView extends ItemView {
 
   async onOpen() {
     const container = this.containerEl.children[1];
+    container.addClass('jw-docs-root-view');
     this.root = createRoot(container);
     this.root.render(<DocsApp />);
   }
@@ -96,11 +98,37 @@ const DocsApp: React.FC = () => {
     if (first) setCurrentId(first.meta.id);
   };
 
+  const currentDoc = currentId ? docRegistry.getDoc(currentId) : undefined;
+  const widgets = getFooterWidgets();
+  const ctxFactory = () => ({ doc: currentDoc, groupId: currentGroup, select: setCurrentId });
+  const footer = (
+    <div className="jw-docs-footer-bar">
+      <div className="jw-footer-left">
+        {widgets
+          .filter(w => (w.align ?? 'left') === 'left')
+          .filter(w => !w.when || w.when(ctxFactory()))
+          .map(w => <React.Fragment key={w.id}>{w.render(ctxFactory())}</React.Fragment>)}
+      </div>
+      <div className="jw-footer-center">
+        {widgets
+          .filter(w => w.align === 'center')
+          .filter(w => !w.when || w.when(ctxFactory()))
+            .map(w => <React.Fragment key={w.id}>{w.render(ctxFactory())}</React.Fragment>)}
+      </div>
+      <div className="jw-footer-right">
+        {widgets
+          .filter(w => (w.align ?? 'left') === 'right')
+          .filter(w => !w.when || w.when(ctxFactory()))
+          .map(w => <React.Fragment key={w.id}>{w.render(ctxFactory())}</React.Fragment>)}
+      </div>
+    </div>
+  );
+
   return (
     <ShellLayout
-  sidebar={<Sidebar currentId={currentId} docs={groupDocs} groupId={currentGroup} onSelect={setCurrentId} />}
+      sidebar={<Sidebar currentId={currentId} docs={groupDocs} groupId={currentGroup} onSelect={setCurrentId} />}
       header={<TopNav currentGroup={currentGroup} onChange={handleGroupChange} />}
-      footer={<div style={{fontSize:'0.75em',opacity:0.6,padding:'4px 8px'}}>内嵌示例（导航分组）</div>}
+      footer={footer}
     >
       <ErrorBoundary>
         {loading && <div>加载中...</div>}

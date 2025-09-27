@@ -6,6 +6,8 @@ import unifiedPlan from './dev/unified-plan.mdx';
 // style-guide 分类文档
 import styleGuideReadme from './dev/style-guide/readme.mdx';
 import styleGuideObsidian from './dev/style-guide/obsidian.mdx';
+// schema 参考文档
+import frontmatterSchema from './dev/frontformatter-schema.mdx';
 
 export interface NavDocItem {
   type?: 'doc';        // 可选标记
@@ -42,6 +44,7 @@ export const MDX_SOURCES: Record<string, string | any> = {
   'unified-plan': unifiedPlan,
   'style-guide': styleGuideReadme,
   'style-guide-obsidian': styleGuideObsidian,
+  'frontformatter-schema': frontmatterSchema,
 };
 
 // 顶部导航分组配置（按数组顺序呈现）
@@ -70,6 +73,8 @@ export const NAV_GROUPS: NavGroup[] = [
           { id: 'style-guide-obsidian', file: 'dev/style-guide/obsidian.mdx', label: 'Obsidian 风格' },
         ]
       }
+      ,
+      { id: 'frontformatter-schema', file: 'dev/frontformatter-schema.mdx', label: 'Frontmatter Schema' }
     ],
   },
 ];

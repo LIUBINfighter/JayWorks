@@ -69,6 +69,12 @@ function compile(rec: DocRecord) {
         console.warn('tags 解析失败', err);
       }
     }
+    // updated / date 字段解析 -> 时间戳 (优先 updated)
+    const dateStr = frontmatter.updated || frontmatter.date;
+    if (dateStr) {
+      const ts = Date.parse(String(dateStr));
+      if (!isNaN(ts)) rec.meta.updated = ts; else console.warn('无法解析日期字段', dateStr);
+    }
     rec.compiled = { frontmatter, element, parsedAt: Date.now() };
     rec.status = 'ready';
   } catch (e: any) {

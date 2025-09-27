@@ -59,3 +59,23 @@ export interface SearchIndex {
   build(records: DocRecord[]): void;
   query(q: string): SearchHit[];
 }
+
+// ---------------- Footer Widgets (Milestone footer) ----------------
+export interface FooterWidgetContext {
+  doc?: DocRecord;
+  groupId: string;
+  select(id: string): void;
+}
+
+export interface FooterWidget {
+  id: string;
+  order?: number;                 // 越小越靠左
+  align?: 'left' | 'center' | 'right';
+  render(ctx: FooterWidgetContext): React.ReactNode;
+  when?(ctx: FooterWidgetContext): boolean; // 返回 false 隐藏
+}
+
+export interface FooterWidgetRegistry {
+  register(widget: FooterWidget): void;
+  list(): FooterWidget[];
+}

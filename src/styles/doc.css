@@ -24,4 +24,22 @@
 .jw-docs-submenu { list-style:none; margin:0; padding:0 0 4px 4px; }
 .jw-docs-submenu > li a { padding:4px 12px 4px 22px; font-size:13px; }
 .jw-docs-submenu > li.active a { font-weight:600; }
+/* Footer widgets */
+.jw-docs-footer-bar { display:flex; align-items:center; gap:12px; font-size:12px; }
+.jw-footer-left,.jw-footer-center,.jw-footer-right { display:flex; align-items:center; gap:12px; }
+.jw-footer-prevnext { display:flex; gap:10px; }
+.jw-footer-link { text-decoration:none; color:var(--text-muted); font-size:12px; }
+.jw-footer-link:hover { color:var(--text-accent); }
+.jw-footer-meta { color:var(--text-faint); font-size:12px; }
+/* View container zero padding (scoped) */
+.jw-docs-root-view.view-content { padding:0 !important; }
+.jw-docs-root-view.view-content .jw-docs-layout { height:100%; }
+/* Pager cards */
+.jw-footer-pager { display:flex; gap:16px; }
+.jw-footer-pager-item { display:flex; flex-direction:column; padding:10px 14px; min-width:200px; border:1px solid var(--background-modifier-border); border-radius:8px; text-decoration:none; background:var(--background-secondary); color:var(--text-normal); font-size:12px; position:relative; }
+.jw-footer-pager-item .label { font-size:11px; opacity:0.7; margin-bottom:4px; }
+.jw-footer-pager-item .title { font-size:14px; font-weight:600; color:var(--text-accent); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.jw-footer-pager-item:hover { background:var(--background-modifier-hover); border-color:var(--background-modifier-border-hover, var(--background-modifier-border)); }
+.jw-footer-pager-item.prev { text-align:left; }
+.jw-footer-pager-item.next { text-align:right; }
 /* --- end docs styles --- */
