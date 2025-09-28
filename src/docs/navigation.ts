@@ -1,5 +1,5 @@
-// 静态导航与文档源定义（重构为 Guide / Reference / Developer 三分结构）
-// Root README 仍作为 readme（可能用于跳转或引用，不再直接进入导航）
+// Static navigation and doc source definitions (refactored to Guide / Reference / Developer structure)
+// Root README still as readme (may be used for jumping or referencing, not directly in navigation)
 import rootReadme from '../../README.md';
 import rootReadmeEn from '../../README.en.md';
 
@@ -19,30 +19,52 @@ import zhStyleGuideOverview from './zh-cn/developer/style-guide/overview.mdx';
 import zhStyleGuideObsidian from './zh-cn/developer/style-guide/obsidian-theme.mdx';
 import zhMdxDebugRecord from './zh-cn/developer/mdx-debug-record.mdx';
 
-// （保留英文 demo 示例作为未来 i18n 占位，不进入导航，仅 id.en 用于映射）
-import enDemo from './en/demo/demo.mdx';
-import enExample from './en/demo/example.mdx';
+// en Guide
+import enIntroduction from './en/guide/introduction.mdx';
+import enCoreFeatures from './en/guide/core-features.mdx';
+import enInteractiveDiagrams from './en/guide/interactive-diagrams.mdx';
+
+// en Reference
+import enPluginSettings from './en/reference/plugin-settings.mdx';
+
+// en Developer
+import enRenderingPipeline from './en/developer/rendering-pipeline.mdx';
+import enNavigationConfig from './en/developer/navigation-config.mdx';
+import enFrontmatterSchema from './en/developer/frontmatter-schema.mdx';
+import enStyleGuideOverview from './en/developer/style-guide/overview.mdx';
+import enStyleGuideObsidian from './en/developer/style-guide/obsidian-theme.mdx';
+import enMdxDebugRecord from './en/developer/mdx-debug-record.mdx';
 
 const MDX_SOURCES_INTERNAL: Record<string, any> = {
   // root references
   'readme': rootReadme,
   'readme.en': rootReadmeEn,
-  // guide
+  // zh-cn guide
   'introduction': zhIntroduction,
   'core-features': zhCoreFeatures,
   'interactive-diagrams': zhInteractiveDiagrams,
-  // reference
+  // zh-cn reference
   'plugin-settings': zhPluginSettings,
-  // developer
+  // zh-cn developer
   'rendering-pipeline': zhRenderingPipeline,
   'navigation-config': zhNavigationConfig,
   'frontmatter-schema': zhFrontmatterSchema,
   'style-guide-overview': zhStyleGuideOverview,
   'style-guide-obsidian': zhStyleGuideObsidian,
   'mdx-debug-record': zhMdxDebugRecord,
-  // english placeholders (not in nav yet)
-  'demo.en': enDemo,
-  'example.en': enExample,
+  // en guide
+  'introduction.en': enIntroduction,
+  'core-features.en': enCoreFeatures,
+  'interactive-diagrams.en': enInteractiveDiagrams,
+  // en reference
+  'plugin-settings.en': enPluginSettings,
+  // en developer
+  'rendering-pipeline.en': enRenderingPipeline,
+  'navigation-config.en': enNavigationConfig,
+  'frontmatter-schema.en': enFrontmatterSchema,
+  'style-guide-overview.en': enStyleGuideOverview,
+  'style-guide-obsidian.en': enStyleGuideObsidian,
+  'mdx-debug-record.en': enMdxDebugRecord,
 };
 
 export interface NavDocItem {
@@ -99,6 +121,7 @@ export const NAV_GROUPS: NavGroup[] = [
     id: 'developer',
     label: '开发者',
     items: [
+      // zh-cn
       { id: 'rendering-pipeline', file: 'zh-cn/developer/rendering-pipeline.mdx', label: '渲染管线' },
       { id: 'navigation-config', file: 'zh-cn/developer/navigation-config.mdx', label: '导航配置' },
       { id: 'frontmatter-schema', file: 'zh-cn/developer/frontmatter-schema.mdx', label: 'Frontmatter 规范' },
