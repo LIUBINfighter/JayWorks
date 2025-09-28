@@ -1,5 +1,6 @@
 import { App, Plugin, PluginSettingTab, Setting } from 'obsidian';
 import MyItemView from './views/MyItemView';
+import UseAgentView from './views/UseAgentView';
 
 interface MyPluginSettings {
 	mySetting: string;
@@ -17,6 +18,9 @@ export default class MyPlugin extends Plugin {
 
 		this.registerView('my-item-view', (leaf) => new MyItemView(leaf));
 
+		// Register the right-side UseAgent view
+		this.registerView('use-agent-view', (leaf) => new UseAgentView(leaf));
+
 		this.addCommand({
 			id: 'open-my-item-view',
 			name: 'Open My Item View',
@@ -25,6 +29,17 @@ export default class MyPlugin extends Plugin {
 					type: 'my-item-view',
 					active: true,
 				});
+			}
+		});
+
+		this.addCommand({
+			id: 'open-use-agent-view',
+			name: 'Open UseAgent View',
+			callback: () => {
+				const leaf = this.app.workspace.getRightLeaf(true);
+				if (leaf) {
+					leaf.setViewState({ type: 'use-agent-view', active: true });
+				}
 			}
 		});
 
