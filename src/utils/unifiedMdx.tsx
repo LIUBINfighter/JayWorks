@@ -7,6 +7,7 @@ import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkMdx from 'remark-mdx';
+import remarkGfm from 'remark-gfm';
 import remarkRehype from 'remark-rehype';
 import rehypeReact from 'rehype-react';
 import matter from 'gray-matter';
@@ -100,6 +101,8 @@ export function createMdxProcessor(options: RenderOptions = {}) {
     .use(remarkParse)
     .use(remarkFrontmatter, ['yaml'])
     .use(remarkMdx)
+    // GitHub Flavored Markdown: tables, task lists, strikethrough, autolinks etc.
+    .use(remarkGfm)
     .use(remarkStripMdx as any)
     // Pass through MDX ESM nodes (they're stripped anyway) and then transform mdxJsx* into elements.
     .use(remarkRehype as any, { allowDangerousHtml: false, passThrough: ['mdxjsEsm', 'mdxJsxFlowElement', 'mdxJsxTextElement'] })
