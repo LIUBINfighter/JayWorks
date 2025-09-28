@@ -182,6 +182,8 @@ code.hljs .hljs-attr, code.hljs .hljs-attribute { color:#e5c07b; }
 .jw-codeblock-diagram-loading { font-size:12px; opacity:0.7; }
 .jw-codeblock-diagram-error { font-size:12px; color:var(--text-error); white-space:pre-wrap; }
 .jw-codeblock-diagram-svg svg { max-width:100%; height:auto; }
+.jw-codeblock-panels { position:relative; }
+.jw-codeblock-pre[data-active='false'], .jw-codeblock-diagram[data-active='false'] { display:none; }
 /* 复制中动画 */
 @keyframes jw-pulse { 0% { opacity:1; } 50% { opacity:0.4; } 100% { opacity:1; } }
 .jw-anim-pulse { animation: jw-pulse 1s ease-in-out infinite; }
@@ -200,6 +202,20 @@ body.jw-docs-hide-statusbar .status-bar { display:none !important; }
 .jw-locale-select { padding:4px 6px; font-size:12px; background:var(--background-secondary); color:var(--text-normal); border:1px solid var(--background-modifier-border); border-radius:6px; outline:none; }
 .jw-locale-select:focus { border-color: var(--text-accent); box-shadow:0 0 0 2px rgba(100,150,250,0.15); }
 .jw-locale-badge { margin-left:4px; font-size:10px; padding:2px 5px; border-radius:4px; background:var(--background-modifier-hover); color:var(--text-accent); font-weight:600; letter-spacing:0.5px; }
+
+/* --- Text selection policy -------------------------------------------------- */
+/* 允许整个文档视图中的文本被选中/复制（覆盖某些 Obsidian 默认） */
+.jw-docs-root-view.view-content, 
+.jw-docs-root-view.view-content .jw-docs-layout, 
+.jw-docs-root-view.view-content .jw-docs-layout * { user-select:text; -webkit-user-select:text; }
+/* 交互控件仍保持不可选，以防拖选时误选按钮文字 */
+.jw-docs-root-view.view-content .jw-codeblock-bar button,
+.jw-docs-root-view.view-content .jw-codeblock-actions button,
+.jw-docs-root-view.view-content .jw-codeblock-tabs button,
+.jw-docs-root-view.view-content .jw-docs-topnav button,
+.jw-docs-root-view.view-content .jw-locale-select { user-select:none; -webkit-user-select:none; }
+/* 行号默认也允许一起复制，如果不希望复制行号，可继续保持 none；这里放开 */
+code.hljs td.hljs-ln-numbers { user-select:text; }
 
 /* --- main.css --- */
 

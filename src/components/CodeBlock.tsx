@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 // @ts-ignore lucide-react 可能暂无类型声明或需要安装对应类型
 import { Copy, Check, Code as CodeIcon, Image as ImageIcon, FileCode2 } from 'lucide-react';
 import { highlightElement } from '../utils/codeHighlight';
@@ -24,7 +24,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ lang, code, highlightLines
   const [imgCopied, setImgCopied] = useState(false);
   const [imgCopying, setImgCopying] = useState(false);
   const [imgCopyError, setImgCopyError] = useState<string | null>(null);
-  // 初始默认展示代码而不是图表，保证首次就能渲染并高亮源码；如果希望仍默认图表，可保持 diagram 但需要在切换时触发一次高亮。
+  // 统一：组件挂载时 <code> 永远存在，只是通过 data-state 控制可见性，避免卸载/重挂导致的竞态
   const [tab, setTab] = useState<TabId>(isMermaid ? 'diagram' : 'code');
   const [diagramError, setDiagramError] = useState<string | null>(null);
   const [svgHtml, setSvgHtml] = useState<string | null>(null);
@@ -133,17 +133,24 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ lang, code, highlightLines
   const codeRef = useRef<HTMLElement | null>(null);
 
   // 初次渲染后进行语法高亮与行号处理，再做 diff 标记
-  useEffect(() => {
-    if (!codeRef.current || isMermaid) return;
+  const highlightedSignatureRef = useRef<string | null>(null);
+  const runHighlight = (force = false) => {
+    if (!codeRef.current) return;
+    const sig = `${lang}|${code.length}|${highlightLines?.join(',') || ''}`;
+    if (!force && highlightedSignatureRef.current === sig) return; // 避免重复高亮
+    highlightedSignatureRef.current = sig;
     const el = codeRef.current;
-    // 重置内容，移除之前 highlight.js 注入的结构
     el.textContent = code.replace(/\n$/, '');
-    highlightElement(el, lang);
-    // 标记 diff 行与手动高亮行
+    const original = el.textContent;
+    try { highlightElement(el, lang); } catch { el.textContent = original || code; }
+    if (!el.textContent) el.textContent = original || code;
+    // 清理旧行标记（避免重复加类）
+    el.querySelectorAll('tr.hljs-ln-line.diff-add, tr.hljs-ln-line.diff-del, tr.hljs-ln-line.diff-hunk, tr.hljs-ln-line.highlight-line').forEach(tr => {
+      tr.classList.remove('diff-add','diff-del','diff-hunk','highlight-line');
+    });
     const lineNodes = el.querySelectorAll('[data-line-number]');
     lineNodes.forEach((lineSpan) => {
-      const parent = lineSpan.parentElement; // tr.hljs-ln-line
-      if (!parent) return;
+      const parent = lineSpan.parentElement; if (!parent) return;
       const lnAttr = (lineSpan as HTMLElement).getAttribute('data-line-number');
       const lineNumber = lnAttr ? parseInt(lnAttr, 10) : undefined;
       const codeTextEl = parent.querySelector('.hljs-ln-code');
@@ -152,21 +159,19 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ lang, code, highlightLines
       if (trimmed.startsWith('@@')) parent.classList.add('diff-hunk');
       else if (trimmed.startsWith('+') && !trimmed.startsWith('+++')) parent.classList.add('diff-add');
       else if (trimmed.startsWith('-') && !trimmed.startsWith('---')) parent.classList.add('diff-del');
-      if (highlightLines && lineNumber && highlightLines.includes(lineNumber)) {
-        parent.classList.add('highlight-line');
-      }
+      if (highlightLines && lineNumber && highlightLines.includes(lineNumber)) parent.classList.add('highlight-line');
     });
-  }, [code, lang, isMermaid, highlightLines]);
+  };
 
-  // Mermaid 情况：当从图表切到源码时，此时 <code> 才首次挂载，需要显式执行一次高亮。
-  useEffect(() => {
-    if (!isMermaid) return; // 仅针对 mermaid
-    if (tab !== 'code') return;
-    if (!codeRef.current) return;
-    const el = codeRef.current;
-    el.textContent = code.replace(/\n$/, '');
-    highlightElement(el, lang);
-  }, [tab, isMermaid, code, lang]);
+  // 高亮：使用 layoutEffect 保证在浏览器绘制前完成，减少闪烁
+  useLayoutEffect(() => { if (!isMermaid) runHighlight(); }, [code, lang, isMermaid, highlightLines]);
+
+  // Mermaid：切换到 code 时强制一次高亮（force）
+  useLayoutEffect(() => {
+    if (isMermaid && tab === 'code') runHighlight(true);
+  }, [tab, isMermaid, code, lang, highlightLines]);
+
+  const handleTabSwitch = (next: TabId) => setTab(next);
 
   return (
     <div className={"jw-codeblock" + (isMermaid ? ' jw-codeblock-mermaid' : '')} data-lang={lang || ''}>
@@ -174,7 +179,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ lang, code, highlightLines
         <div className="jw-codeblock-tabs">
           <button
             className={tab === 'code' ? 'active' : ''}
-            onClick={()=>setTab('code')}
+            onClick={()=>handleTabSwitch('code')}
             disabled={tab==='code'}
             aria-label={isMermaid ? '查看源码' : '代码视图'}
             title={isMermaid ? '查看源码' : '代码视图'}
@@ -184,7 +189,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ lang, code, highlightLines
           {isMermaid && (
             <button
               className={tab === 'diagram' ? 'active' : ''}
-              onClick={()=>setTab('diagram')}
+              onClick={()=>handleTabSwitch('diagram')}
               disabled={tab==='diagram'}
               aria-label="图表视图"
               title="图表视图"
@@ -211,19 +216,19 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ lang, code, highlightLines
           )}
         </div>
       </div>
-      {tab === 'code' && (
-        <pre className="jw-codeblock-pre" data-mode="code">
+      <div className="jw-codeblock-panels">
+        <pre className="jw-codeblock-pre" data-mode="code" data-active={tab==='code'}>
           <code ref={codeRef} className={lang ? 'language-' + lang : undefined} />
         </pre>
-      )}
-      {isMermaid && tab === 'diagram' && (
-        <div className="jw-codeblock-diagram" data-mode="diagram">
-          {diagramError && <div className="jw-codeblock-diagram-error">{diagramError}</div>}
-          {!diagramError && !svgHtml && <div className="jw-codeblock-diagram-loading">渲染中...</div>}
-          {!diagramError && svgHtml && <div ref={svgContainerRef} className="jw-codeblock-diagram-svg" dangerouslySetInnerHTML={{ __html: svgHtml }} />}
-          {imgCopyError && <div className="jw-codeblock-diagram-error" style={{marginTop:8}}>{imgCopyError}</div>}
-        </div>
-      )}
+        {isMermaid && (
+          <div className="jw-codeblock-diagram" data-mode="diagram" data-active={tab==='diagram'}>
+            {diagramError && <div className="jw-codeblock-diagram-error">{diagramError}</div>}
+            {!diagramError && !svgHtml && <div className="jw-codeblock-diagram-loading">渲染中...</div>}
+            {!diagramError && svgHtml && <div ref={svgContainerRef} className="jw-codeblock-diagram-svg" dangerouslySetInnerHTML={{ __html: svgHtml }} />}
+            {imgCopyError && <div className="jw-codeblock-diagram-error" style={{marginTop:8}}>{imgCopyError}</div>}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
