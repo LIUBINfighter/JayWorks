@@ -66,6 +66,8 @@ const DocsApp: React.FC = () => {
   const firstDocId = allIds.find(id => docsRegistry.getDoc(id)?.meta.groupId === firstGroup.id);
   const [currentGroup, setCurrentGroup] = useState<string>(firstGroup.id);
   const [currentId, setCurrentId] = useState<string>(firstDocId || allIds[0]);
+  // 跟踪当前激活语言；用于在切换语言时强制触发渲染/重新解析
+  const [activeLocale, setActiveLocale] = useState<string>(() => docsRegistry.getActiveLocale());
   const [frontmatter, setFrontmatter] = useState<Record<string, any>>({});
   const [contentEl, setContentEl] = useState<React.ReactElement | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -100,7 +102,7 @@ const DocsApp: React.FC = () => {
     } catch (e: any) {
       console.error(e); setError(e?.message || '渲染失败');
     } finally { setLoading(false); }
-  }, [currentId]);
+  }, [currentId, activeLocale]); // locale 变化时重新获取文档（获取对应语言或 fallback）
 
   const groupDocs = docsRegistry.list().filter(r => r.meta.groupId === currentGroup);
 
@@ -183,15 +185,22 @@ const DocsApp: React.FC = () => {
             {/* <VersionSwitcher onChange={() => {
               // 切换版本逻辑已移除
             }} /> */}
-            <LocaleSwitcher onChange={() => {
+            <LocaleSwitcher onChange={(loc) => {
+              // 更新本地 locale 状态，触发依赖 activeLocale 的 effect
+              setActiveLocale(loc);
               if (currentId) {
                 const rec = docsRegistry.getDoc(currentId);
                 if (!rec) {
                   const firstInGroup = docsRegistry.list().find(r => r.meta.groupId === currentGroup);
                   if (firstInGroup) setCurrentId(firstInGroup.meta.id);
                 } else {
-                  setCurrentId(rec.meta.canonicalId || rec.meta.id); // canonicalId 用于保持语言切换稳定
+                  // 使用 canonicalId 保持跨语言稳定。如果 canonicalId 与当前 id 不同，仍然指向逻辑同一文档
+                  setCurrentId(rec.meta.canonicalId || rec.meta.id);
                 }
+              } else {
+                // 若无当前文档，回到当前组第一篇
+                const firstInGroup = docsRegistry.list().find(r => r.meta.groupId === currentGroup);
+                if (firstInGroup) setCurrentId(firstInGroup.meta.id);
               }
             }} />
             <SearchBar onSelect={(id, tokens)=>{ setSearchTokens(tokens); selectDoc(id); }} />
