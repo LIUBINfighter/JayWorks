@@ -23,6 +23,10 @@ saveData()
 
 ### Built-in doc
 
+Local first. No need to open a browser, click, search, locating, find, learn, think......come back and forget.
+
+Keep all essential features and documentation within the workspace. Minimize context switching—help users solve problems and learn directly in Obsidian, without needing to visit external sites.
+
 80%的常用功能不应该离开工作区进行学习和操作，与其打开在线文档进行复杂的加载以及独立维护一个文档网站Repo的开销，不如做成内置的doc
 
 内置文档
@@ -42,6 +46,8 @@ i18n是标配无需多言，版本化文档其实只有大版本更新才会有�
 ```
 
 这种类似的形式。
+
+后来我发现其实没必要版本化控制文档，因为内置文档
 
 ### 获取网络资产
 
@@ -66,8 +72,12 @@ React 19
 
 ## Inspiration
 
-Almost perfect community plugin [Taitava/obsidian-shellcommands](github.com/Taitava/obsidian-shellcommands).
+Almost perfect community plugin [Taitava/obsidian-shellcommands](https://github.com/Taitava/obsidian-shellcommands).
 
-An opinionated plugin template [polyipseity/obsidian-plugin-template](github.com/polyipseity/obsidian-plugin-template).
+An opinionated plugin template [polyipseity/obsidian-plugin-template](https://github.com/polyipseity/obsidian-plugin-template).
 
-My tiny plugin for guitarist [LIUBINfighter/Obsidian-Tab-Flow](github.com/LIUBINfighter/Obsidian-Tab-Flow).
+My tiny plugin for guitarist [LIUBINfighter/Obsidian-Tab-Flow](https://github.com/LIUBINfighter/Obsidian-Tab-Flow).
+
+Interactive playground for developers to learn [Vue.js](https://vuejs.org/).
+
+[docusaurus.io: Build optimized websites quickly, focus on your content](https://docusaurus.io)
