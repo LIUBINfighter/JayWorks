@@ -70,6 +70,9 @@ mark.jw-search-hit { background:var(--text-highlight-bg,var(--text-selection)); 
 /* --- end docs styles --- */
 /* Hide status bar when docs view active */
 body.jw-docs-hide-statusbar .status-bar { display:none !important; }
+/* 文档路径 */
+.jw-doc-path { font-size:11px; line-height:1.2; padding:0; background:transparent; border-radius:0; opacity:0.7; display:block; user-select:text; cursor:default; }
+.jw-doc-path code { background:none; padding:0; font-size:11px; }
 /* Version switcher (disabled)
 .jw-version-switcher {}
 .jw-version-select {}

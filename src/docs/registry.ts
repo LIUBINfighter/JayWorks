@@ -64,8 +64,18 @@ for (const group of NAV_GROUPS) {
     const canonical = parts.slice(0, -1).join('.');
     if (!recordMap.has(canonical)) continue; // 仅在主文档存在时才注册变体
     const base = recordMap.get(canonical)!;
-    // 使用主文档 groupId，filePath 若未知用占位符（不影响渲染）
-    registerDoc(base.meta.groupId || '', key, base.meta.filePath || key, undefined, false);
+    // 推导变体路径：如果 canonical 在 zh-cn/ 下，替换为 <locale>/ 前缀；否则直接复用
+    let derivedPath = base.meta.filePath || key;
+    // 特殊处理根 README：README.md -> README.<locale>.md
+    if (canonical === 'readme' && /README\.md$/i.test(derivedPath)) {
+      derivedPath = derivedPath.replace(/README\.md$/i, `README.${locale}.md`);
+    }
+    if (derivedPath.includes('zh-cn/')) {
+      derivedPath = derivedPath.replace(/zh-cn\//, `${locale}/`);
+    } else if (derivedPath.startsWith('zh-cn/')) {
+      derivedPath = derivedPath.replace(/^zh-cn\//, `${locale}/`);
+    }
+    registerDoc(base.meta.groupId || '', key, derivedPath, undefined, false);
   }
 })();
 

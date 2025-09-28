@@ -1,6 +1,7 @@
 // 静态导航与文档源定义（移除 import.meta 动态扫描，避免构建环境不支持的警告）
 // Root README 作为入口文档 readme
 import rootReadme from '../../README.md';
+import rootReadmeEn from '../../README.en.md';
 // zh-cn 主语言文档
 import zhDemo from './zh-cn/demo/demo.mdx';
 import zhExample from './zh-cn/demo/example.mdx';
@@ -16,6 +17,7 @@ import enExample from './en/demo/example.mdx';
 
 const MDX_SOURCES_INTERNAL: Record<string, any> = {
   'readme': rootReadme,
+  'readme.en': rootReadmeEn,
   // zh-cn canonical docs
   'demo': zhDemo,
   'example': zhExample,
@@ -94,3 +96,25 @@ export const NAV_GROUPS: NavGroup[] = [
     ]
   }
 ];
+
+// 提供文档 id -> 源文件相对路径映射（仅针对已进入导航的 canonical 文档）
+export const DOC_FILE_PATHS: Record<string, string> = (() => {
+  const map: Record<string, string> = {};
+  for (const group of NAV_GROUPS) {
+    for (const entry of group.items) {
+      if ((entry as any).type === 'category') {
+        const cat: any = entry;
+        if (cat.draft) continue;
+        for (const doc of cat.items) {
+          if (doc.draft) continue;
+          map[doc.id] = doc.file;
+        }
+      } else {
+        const doc: any = entry;
+        if (doc.draft) continue;
+        map[doc.id] = doc.file;
+      }
+    }
+  }
+  return map;
+})();

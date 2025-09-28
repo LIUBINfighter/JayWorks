@@ -1,5 +1,5 @@
 import { ItemView } from 'obsidian';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createRoot } from 'react-dom/client';
 // Use combined registry (version + i18n)
 import { docsRegistry } from '../docs/combinedRegistry';
@@ -10,7 +10,7 @@ import { Sidebar } from '../components/Sidebar';
 import { TopNav } from '../components/TopNav';
 import { SearchBar } from '../components/SearchBar';
 import { highlightTerms, clearHighlights } from '../utils/highlight';
-import { NAV_GROUPS } from '../docs/navigation';
+import { NAV_GROUPS, DOC_FILE_PATHS } from '../docs/navigation';
 // VersionSwitcher 已停用（多版本文档移除，仅保留 i18n）。
 // import { VersionSwitcher } from '../components/VersionSwitcher';
 import { LocaleSwitcher } from '../components/LocaleSwitcher';
@@ -183,7 +183,9 @@ const DocsApp: React.FC = () => {
       sidebar={<Sidebar currentId={currentId} docs={groupDocs} groupId={currentGroup} onSelect={navigateWithoutSearch} />}
       header={
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
-          <TopNav currentGroup={currentGroup} onChange={(gid)=>{ setSearchTokens([]); handleGroupChange(gid); }} />
+          <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+            <TopNav currentGroup={currentGroup} onChange={(gid)=>{ setSearchTokens([]); handleGroupChange(gid); }} />
+          </div>
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
             {/* <VersionSwitcher onChange={() => {
               // 切换版本逻辑已移除
@@ -217,6 +219,15 @@ const DocsApp: React.FC = () => {
         {error && <div style={{ color: 'var(--text-error)' }}>错误: {error}</div>}
         {!loading && !error && (
           <div>
+            {/* 路径显示（标题上方） */}
+            {useMemo(() => {
+              if (!currentId) return null;
+              const rec = docsRegistry.getDoc(currentId);
+              if (!rec) return null;
+              const path = rec.meta.filePath || DOC_FILE_PATHS[rec.meta.canonicalId || rec.meta.id];
+              if (!path) return null;
+              return <div className="jw-doc-path" style={{ marginBottom:8 }} title={path}><code>{path}</code></div>;
+            }, [currentId, activeLocale])}
             <h1>{frontmatter.title || '文档'}</h1>
             {frontmatter.description && <p style={{marginTop:-8,opacity:0.8}}>{frontmatter.description}</p>}
             <div style={{ borderTop: '1px solid var(--background-modifier-border)', marginTop: 12, paddingTop: 12 }}>
