@@ -1,0 +1,60 @@
+---
+title: 导航配置（navigation.ts）
+description: 说明如何通过 NAV_GROUPS 与分类构建顶部与侧边栏导航、控制草稿与分页顺序。
+updated: 2025-09-28
+---
+
+本页对应原 `configuration.mdx` 内容，聚焦最终使用者（模板拓展者）需要掌握的导航结构与字段语义。
+
+## 快速示例
+
+```ts
+export const NAV_GROUPS = [
+  { id: 'guide', label: '指南', items: [ { id: 'introduction', file: 'zh-cn/guide/introduction.mdx' } ] },
+  { id: 'reference', label: '参考', items: [ { id: 'plugin-settings', file: 'zh-cn/reference/plugin-settings.mdx', draft: true } ] },
+  { id: 'developer', label: '开发者', items: [ /* ... */ ] }
+];
+```
+
+## Group / Category / Doc 关系
+
+| 层级 | 说明 | 关键字段 |
+| ---- | ---- | ---- |
+| Group | 顶部一级分组 | `id`, `label`, `items` |
+| Category | 侧边栏折叠分类 | `type: 'category'`, `defaultId` |
+| Doc | 具体文档条目 | `id`, `file`, `label?`, `draft?` |
+
+> 遍历顺序：按 `NAV_GROUPS` 顺序 → group.items 顺序 → category.items 展开 → 过滤 draft → 形成分页序列。
+
+## draft 策略
+
+| 位置 | 含义 |
+| ---- | ---- |
+| doc.draft=true | 文档不出现在导航与分页 |
+| category.draft=true | 分类及其所有子文档隐藏 |
+
+frontmatter 中的 `draft` （若有）不参与过滤（可扩展）。
+
+## frontmatter 与导航优先级
+
+| 目标 | 优先级 |
+| ---- | ---- |
+| 侧边栏显示文本 | `navLabel` (frontmatter) > doc.label (导航) > frontmatter.title > doc.id |
+| 更新时间 | `updated` > `date` > 无 |
+
+## 常见问题
+
+| 问题 | 排查 |
+| ---- | ---- |
+| 新文档不显示 | 是否已 import 并加入 `MDX_SOURCES` / `NAV_GROUPS`? |
+| 分页跳过条目 | 是否被标记 draft? |
+| 标题不更新 | 是否被 navLabel 覆盖? |
+
+## 最佳实践
+
+- 先规划 `navigation.ts` 再创建文件，避免孤儿文档。
+- 变更路径后同步更新 `file` 字段防止迷失。
+- 草稿迭代阶段用 `draft: true` 隐藏，准备发布时移除。
+
+---
+更多字段解析与 schema 请参见 “开发者 → Frontmatter 规范”。

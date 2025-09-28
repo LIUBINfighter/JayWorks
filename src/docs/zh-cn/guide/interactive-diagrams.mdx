@@ -1,0 +1,87 @@
+---
+title: 交互式图表（Mermaid）
+description: 展示 Mermaid 图表在内置文档中的渲染、源码与图表视图切换及复制能力。
+updated: 2025-09-28
+---
+
+本页展示常见 Mermaid 语法及当前实现目标：
+
+1. 代码块以 ```mermaid 标记后支持“源码 / 图表”双标签切换。
+2. 支持复制源码；复制图片（优先 SVG，失败时回退 PNG）。
+3. 渲染失败时提供错误提示与回退。
+
+> 主题联动、行号/高亮、折叠长图等特性仍在规划中。
+
+## 流程图
+
+```mermaid
+flowchart TD
+  A[开始] --> B{条件检查?}
+  B -- 是 --> C[执行任务 X]
+  B -- 否 --> D[执行任务 Y]
+  C --> E[归档]
+  D --> E[归档]
+  E --> F((结束))
+```
+
+## 时序图
+
+```mermaid
+sequenceDiagram
+  participant User
+  participant Plugin as JayWorks
+  participant Engine as MermaidEngine
+  User->>Plugin: 打开图表示例
+  Plugin->>Engine: render(源码)
+  Engine-->>Plugin: 返回 SVG
+  Plugin-->>User: 显示图表 + 操作按钮
+```
+
+## 甘特图
+
+```mermaid
+gantt
+  title 内置 Mermaid 支持里程碑
+  dateFormat  YYYY-MM-DD
+  section 基础
+  语法高亮            :done,    hl, 2025-09-28, 1d
+  Mermaid 动态加载     :done,    mm, 2025-09-28, 1d
+  section 加强
+  行号/高亮行         :active,  ln, 2025-09-29, 2d
+  主题联动            :         th, 2025-10-02, 2d
+```
+
+## 状态图
+
+```mermaid
+stateDiagram-v2
+  [*] --> Idle
+  Idle --> Loading : 加载 mermaid
+  Loading --> Ready : 解析成功
+  Loading --> Error : 解析失败
+  Error --> Idle : 重试/刷新
+```
+
+## 思维导图（实验性）
+
+```mermaid
+mindmap
+  root((JayWorks))
+    Internal Docs
+      MDX
+      i18n
+    CodeBlock
+      Highlight
+      Mermaid
+      Copy Source
+      Copy Image
+```
+
+---
+未来增强方向：
+
+- 按系统/主题自动切换 Mermaid 主题。
+- 允许折叠冗长图表区域。
+- 导出为 PNG / SVG 到 Vault。
+
+欢迎在 issue 中提出补充示例或增强建议。

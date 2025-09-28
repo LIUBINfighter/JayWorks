@@ -1,35 +1,46 @@
-// 静态导航与文档源定义（移除 import.meta 动态扫描，避免构建环境不支持的警告）
-// Root README 作为入口文档 readme
+// 静态导航与文档源定义（重构为 Guide / Reference / Developer 三分结构）
+// Root README 仍作为 readme（可能用于跳转或引用，不再直接进入导航）
 import rootReadme from '../../README.md';
 import rootReadmeEn from '../../README.en.md';
-// zh-cn 主语言文档
-import zhDemo from './zh-cn/demo/demo.mdx';
-import zhExample from './zh-cn/demo/example.mdx';
-import zhMermaid from './zh-cn/demo/mermaid.mdx';
-import zhConfig from './zh-cn/dev/configuration.mdx';
-import zhSchema from './zh-cn/dev/frontformatter-schema.mdx';
-import zhDebug from './zh-cn/dev/mdx-component-debug.mdx';
-import zhUnified from './zh-cn/dev/unified-plan.mdx';
-import zhStyleGuideReadme from './zh-cn/dev/style-guide/readme.mdx';
-import zhStyleGuideObsidian from './zh-cn/dev/style-guide/obsidian.mdx';
-// 英文变体文档（不进入导航，仅通过 id.en 参与 i18n）
+
+// zh-cn Guide
+import zhIntroduction from './zh-cn/guide/introduction.mdx';
+import zhCoreFeatures from './zh-cn/guide/core-features.mdx';
+import zhInteractiveDiagrams from './zh-cn/guide/interactive-diagrams.mdx';
+
+// zh-cn Reference
+import zhPluginSettings from './zh-cn/reference/plugin-settings.mdx';
+
+// zh-cn Developer
+import zhRenderingPipeline from './zh-cn/developer/rendering-pipeline.mdx';
+import zhNavigationConfig from './zh-cn/developer/navigation-config.mdx';
+import zhFrontmatterSchema from './zh-cn/developer/frontmatter-schema.mdx';
+import zhStyleGuideOverview from './zh-cn/developer/style-guide/overview.mdx';
+import zhStyleGuideObsidian from './zh-cn/developer/style-guide/obsidian-theme.mdx';
+import zhMdxDebugRecord from './zh-cn/developer/mdx-debug-record.mdx';
+
+// （保留英文 demo 示例作为未来 i18n 占位，不进入导航，仅 id.en 用于映射）
 import enDemo from './en/demo/demo.mdx';
 import enExample from './en/demo/example.mdx';
 
 const MDX_SOURCES_INTERNAL: Record<string, any> = {
+  // root references
   'readme': rootReadme,
   'readme.en': rootReadmeEn,
-  // zh-cn canonical docs
-  'demo': zhDemo,
-  'example': zhExample,
-  'mermaid': zhMermaid,
-  'configuration': zhConfig,
-  'frontformatter-schema': zhSchema,
-  'mdx-component-debug': zhDebug,
-  'unified-plan': zhUnified,
-  'style-guide': zhStyleGuideReadme,
+  // guide
+  'introduction': zhIntroduction,
+  'core-features': zhCoreFeatures,
+  'interactive-diagrams': zhInteractiveDiagrams,
+  // reference
+  'plugin-settings': zhPluginSettings,
+  // developer
+  'rendering-pipeline': zhRenderingPipeline,
+  'navigation-config': zhNavigationConfig,
+  'frontmatter-schema': zhFrontmatterSchema,
+  'style-guide-overview': zhStyleGuideOverview,
   'style-guide-obsidian': zhStyleGuideObsidian,
-  // english variants
+  'mdx-debug-record': zhMdxDebugRecord,
+  // english placeholders (not in nav yet)
   'demo.en': enDemo,
   'example.en': enExample,
 };
@@ -69,33 +80,39 @@ export const MDX_SOURCES: Record<string, any> = MDX_SOURCES_INTERNAL;
 // 规则：demo/* -> Demo 组；dev/* -> Dev 组；style-guide/* 聚合为分类
 export const NAV_GROUPS: NavGroup[] = [
   {
-    id: 'demo',
-    label: 'Demo',
+    id: 'guide',
+    label: '指南',
     items: [
-      { id: 'readme', file: '../README.md', label: 'README' },
-      { id: 'demo', file: 'zh-cn/demo/demo.mdx', label: '示例文档' },
-      { id: 'example', file: 'zh-cn/demo/example.mdx', label: '第二篇示例' },
-      { id: 'mermaid', file: 'zh-cn/demo/mermaid.mdx', label: 'Mermaid 示例' }
+      { id: 'introduction', file: 'zh-cn/guide/introduction.mdx', label: '介绍' },
+      { id: 'core-features', file: 'zh-cn/guide/core-features.mdx', label: '核心功能' },
+      { id: 'interactive-diagrams', file: 'zh-cn/guide/interactive-diagrams.mdx', label: '交互式图表' }
     ]
   },
   {
-    id: 'dev',
-    label: 'Dev',
+    id: 'reference',
+    label: '参考',
     items: [
-      { id: 'mdx-component-debug', file: 'zh-cn/dev/mdx-component-debug.mdx', label: '组件调试', draft: true },
-      { id: 'unified-plan', file: 'zh-cn/dev/unified-plan.mdx', label: '渲染管线设计' },
+      { id: 'plugin-settings', file: 'zh-cn/reference/plugin-settings.mdx', label: '插件设置', draft: true }
+    ]
+  },
+  {
+    id: 'developer',
+    label: '开发者',
+    items: [
+      { id: 'rendering-pipeline', file: 'zh-cn/developer/rendering-pipeline.mdx', label: '渲染管线' },
+      { id: 'navigation-config', file: 'zh-cn/developer/navigation-config.mdx', label: '导航配置' },
+      { id: 'frontmatter-schema', file: 'zh-cn/developer/frontmatter-schema.mdx', label: 'Frontmatter 规范' },
+      { id: 'mdx-debug-record', file: 'zh-cn/developer/mdx-debug-record.mdx', label: 'MDX 调试记录' },
       {
         type: 'category',
         id: 'style-guide',
-        label: 'Style Guide',
-        defaultId: 'style-guide',
+        label: '样式指南',
+        defaultId: 'style-guide-overview',
         items: [
-          { id: 'style-guide', file: 'zh-cn/dev/style-guide/readme.mdx', label: '概览' },
-          { id: 'style-guide-obsidian', file: 'zh-cn/dev/style-guide/obsidian.mdx', label: 'Obsidian 风格' }
+          { id: 'style-guide-overview', file: 'zh-cn/developer/style-guide/overview.mdx', label: '概览' },
+          { id: 'style-guide-obsidian', file: 'zh-cn/developer/style-guide/obsidian-theme.mdx', label: 'Obsidian 风格适配' }
         ]
-      },
-      { id: 'frontformatter-schema', file: 'zh-cn/dev/frontformatter-schema.mdx', label: 'Frontmatter Schema' },
-      { id: 'configuration', file: 'zh-cn/dev/configuration.mdx', label: '配置与使用' }
+      }
     ]
   }
 ];
