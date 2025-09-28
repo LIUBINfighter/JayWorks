@@ -43,6 +43,9 @@
 		"remark-mdx": "^3.0.1",
 		"remark-parse": "^11.0.0",
 		"remark-rehype": "^11.1.0",
-		"unified": "^11.0.4"
+		"unified": "^11.0.4",
+		"highlight.js": "^11.10.0",
+		"mermaid": "^10.9.1"
+		,"lucide-react": "^0.475.0"
 	}
 }

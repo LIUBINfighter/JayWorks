@@ -1,0 +1,94 @@
+---
+title: Mermaid 示例
+description: 演示内置 CodeBlock 组件对 mermaid 图表的渲染、源码/图表切换与复制能力。
+tags: [mermaid, diagram, demo]
+order: 30
+---
+
+# Mermaid 图表示例
+
+本页展示多种常见 Mermaid 语法，并验证：
+
+1. 代码块以 ` ```mermaid ` 标记后会出现 “源码 / 图表” 双标签。
+2. “复制源码” 将复制原始 mermaid 文本。
+3. “复制图片” 优先复制 SVG（支持粘贴到大多数富文本编辑器）；不支持时回退 PNG。
+4. 渲染失败时会显示错误信息并可切换回源码。
+
+> 小贴士：切换标签后不会重新编译 mermaid，除非源码内容（文档刷新）发生变化。
+
+## 流程图 (Flowchart)
+
+```mermaid
+flowchart TD
+		A[开始] --> B{条件检查?}
+		B -- 是 --> C[执行任务 X]
+		B -- 否 --> D[执行任务 Y]
+		C --> E[归档]
+		D --> E[归档]
+		E --> F((结束))
+```
+
+## 时序图 (Sequence)
+
+```mermaid
+sequenceDiagram
+		participant User
+		participant Plugin as JayWorks
+		participant Engine as MermaidEngine
+		User->>Plugin: 打开图表示例
+		Plugin->>Engine: render(源码)
+		Engine-->>Plugin: 返回 SVG
+		Plugin-->>User: 显示图表 + 操作按钮
+```
+
+## 甘特图 (Gantt)
+
+```mermaid
+gantt
+		title JayWorks Mermaid 支持里程碑
+		dateFormat  YYYY-MM-DD
+		section 基础
+		语法高亮            :done,    hl, 2025-09-28, 1d
+		Mermaid 动态加载     :done,    mm, 2025-09-28, 1d
+		section 加强
+		行号/高亮行         :active,  ln, 2025-09-29, 2d
+		主题联动            :         th, 2025-10-02, 2d
+```
+
+## 状态图 (State Diagram)
+
+```mermaid
+stateDiagram-v2
+		[*] --> Idle
+		Idle --> Loading : 加载 mermaid
+		Loading --> Ready : 解析成功
+		Loading --> Error : 解析失败
+		Error --> Idle : 重试/刷新
+```
+
+## 思维导图 (Mindmap) (如果版本支持)
+
+```mermaid
+mindmap
+	root((JayWorks))
+		Internal Docs
+			MDX
+			i18n
+		CodeBlock
+			Highlight
+			Mermaid
+			Copy Source
+			Copy Image
+```
+
+---
+
+### 可能的后续增强
+
+- 根据 Obsidian 主题或系统暗色模式自动切换 Mermaid 主题。
+- 支持行号与行高亮（对源码 tab）。
+- 按需折叠长图表区域，并提供“展开/收起”按钮。
+- 集成导出：一键导出为 PNG / SVG 文件到当前 Vault。
+
+欢迎继续在此页追加更多语法案例用于回归测试。
+

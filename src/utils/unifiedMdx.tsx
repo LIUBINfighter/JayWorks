@@ -10,6 +10,35 @@ import remarkMdx from 'remark-mdx';
 import remarkRehype from 'remark-rehype';
 import rehypeReact from 'rehype-react';
 import matter from 'gray-matter';
+// 自定义：代码块转换为 <CodeBlock /> 组件
+
+function rehypeCodeBlockToComponent() {
+  return (tree: any) => {
+    const visit = (node: any) => {
+      if (!node || typeof node !== 'object') return;
+      if (Array.isArray(node.children)) node.children.forEach((c: any) => visit(c));
+      // 寻找 <pre><code class="language-ts">...</code></pre>
+      if (node.type === 'element' && node.tagName === 'pre' && Array.isArray(node.children) && node.children.length === 1) {
+        const codeEl = node.children[0];
+        if (codeEl && codeEl.type === 'element' && codeEl.tagName === 'code') {
+          const cls: string = (codeEl.properties && codeEl.properties.className && codeEl.properties.className.join ? codeEl.properties.className.join(' ') : (codeEl.properties?.className || '')) as string;
+            const match = /language-([A-Za-z0-9+#_-]+)/.exec(cls || '');
+            const lang = match ? match[1] : undefined;
+            // 提取纯文本（不处理内联 <span>，当前阶段假设 remark-rehype 未装饰内部）
+            let codeText = '';
+            if (Array.isArray(codeEl.children)) {
+              codeText = codeEl.children.map((c: any) => (c.type === 'text' ? c.value : '')).join('');
+            }
+            // 替换为 <CodeBlock code="..." lang="..." />
+            node.tagName = 'CodeBlock';
+            node.children = [];
+            node.properties = { code: codeText, lang };
+        }
+      }
+    };
+    visit(tree);
+  };
+}
 
 export interface RenderMdxResult {
   frontmatter: Record<string, any>;
@@ -75,6 +104,7 @@ export function createMdxProcessor(options: RenderOptions = {}) {
     // Pass through MDX ESM nodes (they're stripped anyway) and then transform mdxJsx* into elements.
     .use(remarkRehype as any, { allowDangerousHtml: false, passThrough: ['mdxjsEsm', 'mdxJsxFlowElement', 'mdxJsxTextElement'] })
     .use(rehypeMdxJsxToElement)
+    .use(rehypeCodeBlockToComponent)
     .use(rehypeReact as any, {
       jsx,
       jsxs,

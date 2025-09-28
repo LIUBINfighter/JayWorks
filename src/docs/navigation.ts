@@ -5,6 +5,7 @@ import rootReadmeEn from '../../README.en.md';
 // zh-cn 主语言文档
 import zhDemo from './zh-cn/demo/demo.mdx';
 import zhExample from './zh-cn/demo/example.mdx';
+import zhMermaid from './zh-cn/demo/mermaid.mdx';
 import zhConfig from './zh-cn/dev/configuration.mdx';
 import zhSchema from './zh-cn/dev/frontformatter-schema.mdx';
 import zhDebug from './zh-cn/dev/mdx-component-debug.mdx';
@@ -21,6 +22,7 @@ const MDX_SOURCES_INTERNAL: Record<string, any> = {
   // zh-cn canonical docs
   'demo': zhDemo,
   'example': zhExample,
+  'mermaid': zhMermaid,
   'configuration': zhConfig,
   'frontformatter-schema': zhSchema,
   'mdx-component-debug': zhDebug,
@@ -72,7 +74,8 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { id: 'readme', file: '../README.md', label: 'README' },
       { id: 'demo', file: 'zh-cn/demo/demo.mdx', label: '示例文档' },
-      { id: 'example', file: 'zh-cn/demo/example.mdx', label: '第二篇示例' }
+      { id: 'example', file: 'zh-cn/demo/example.mdx', label: '第二篇示例' },
+      { id: 'mermaid', file: 'zh-cn/demo/mermaid.mdx', label: 'Mermaid 示例' }
     ]
   },
   {
