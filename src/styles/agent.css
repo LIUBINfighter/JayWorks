@@ -1,0 +1,54 @@
+
+.jw-use-agent-root {
+	height: 100%;
+}
+
+.jw-browser-agent {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+
+.jw-browser-toolbar {
+	display: flex;
+	gap: 8px;
+	padding: 6px;
+	align-items: center;
+}
+
+.jw-browser-address {
+	flex: 1;
+	padding: 6px 8px;
+}
+
+.jw-browser-body {
+	display: flex;
+	flex: 1;
+	gap: 8px;
+	padding: 8px;
+}
+
+.jw-browser-preview {
+	flex: 2;
+	min-height: 200px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	overflow: hidden;
+}
+
+.jw-browser-panel {
+	flex: 1;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	padding: 8px;
+	display: flex;
+	flex-direction: column;
+}
+
+.jw-browser-logs {
+	margin-top: 8px;
+	background: var(--background-primary);
+	flex: 1;
+	overflow: auto;
+}
+
