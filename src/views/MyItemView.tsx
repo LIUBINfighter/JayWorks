@@ -11,7 +11,8 @@ import { TopNav } from '../components/TopNav';
 import { SearchBar } from '../components/SearchBar';
 import { highlightTerms, clearHighlights } from '../utils/highlight';
 import { NAV_GROUPS } from '../docs/navigation';
-import { VersionSwitcher } from '../components/VersionSwitcher';
+// VersionSwitcher 已停用（多版本文档移除，仅保留 i18n）。
+// import { VersionSwitcher } from '../components/VersionSwitcher';
 import { LocaleSwitcher } from '../components/LocaleSwitcher';
 import { getFooterWidgets } from '../docs/footerWidgets';
 
@@ -179,20 +180,9 @@ const DocsApp: React.FC = () => {
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
           <TopNav currentGroup={currentGroup} onChange={(gid)=>{ setSearchTokens([]); handleGroupChange(gid); }} />
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-            <VersionSwitcher onChange={() => {
-              // 切换版本后重新获取当前文档（可能内容版本语义变更）
-              if (currentId) {
-                const rec = docsRegistry.getDoc(currentId);
-                if (!rec) {
-                  // 如果当前文档在新版本不存在，则跳转该组第一篇
-                  const firstInGroup = docsRegistry.list().find(r => r.meta.groupId === currentGroup);
-                  if (firstInGroup) setCurrentId(firstInGroup.meta.id);
-                } else {
-                  // 强制触发 effect 重新渲染
-                  setCurrentId(rec.meta.id);
-                }
-              }
-            }} />
+            {/* <VersionSwitcher onChange={() => {
+              // 切换版本逻辑已移除
+            }} /> */}
             <LocaleSwitcher onChange={() => {
               if (currentId) {
                 const rec = docsRegistry.getDoc(currentId);
