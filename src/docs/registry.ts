@@ -51,6 +51,24 @@ for (const group of NAV_GROUPS) {
   for (const entry of group.items) walkEntries(group.id, entry);
 }
 
+// 追加：自动注册语言变体文档（不出现在导航，仅用于 i18n 解析）
+// 约定：<canonical>.<locale> 且 canonical 已存在，locale 简单匹配 /^[a-z]{2}(?:-[A-Z]{2})?$/
+(() => {
+  const LOCALE_RE = /^[a-z]{2}(?:-[A-Z]{2})?$/;
+  for (const key of Object.keys(MDX_SOURCES)) {
+    if (recordMap.has(key)) continue; // 已经注册（在导航里）
+    const parts = key.split('.');
+    if (parts.length < 2) continue; // 没有 locale 后缀
+    const locale = parts[parts.length - 1];
+    if (!LOCALE_RE.test(locale)) continue; // 尾段不是合法 locale
+    const canonical = parts.slice(0, -1).join('.');
+    if (!recordMap.has(canonical)) continue; // 仅在主文档存在时才注册变体
+    const base = recordMap.get(canonical)!;
+    // 使用主文档 groupId，filePath 若未知用占位符（不影响渲染）
+    registerDoc(base.meta.groupId || '', key, base.meta.filePath || key, undefined, false);
+  }
+})();
+
 
 function compile(rec: DocRecord) {
   if (!rec.raw || rec.compiled) return;

@@ -1,19 +1,42 @@
-// Root README (outside docs/) as first tab doc
+// 自动扫描多语言文档：
+// - 主导航使用 zh-cn 目录结构
+// - 其它语言目录 (en 等) 只作为变体存在（不直接出现在导航）
+// - Root README 仍然保留为单独入口（id=readme）
 import rootReadme from '../../README.md';
-import demo from './demo/demo.mdx';
-import example from './demo/example.mdx';
-import exampleEn from './demo/example.en.mdx';
-// dev 分组文档
-import mdxComponentDebug from './dev/mdx-component-debug.mdx';
-import unifiedPlan from './dev/unified-plan.mdx';
-// style-guide 分类文档
-import styleGuideReadme from './dev/style-guide/readme.mdx';
-import styleGuideObsidian from './dev/style-guide/obsidian.mdx';
-// schema 参考文档
-import frontmatterSchema from './dev/frontformatter-schema.mdx';
-import configuration from './dev/configuration.mdx';
-// 多版本说明文档暂时停用
-// import versioning from './dev/versioning.mdx';
+
+// esbuild 支持 import.meta.globEager（与 Vite 类似）；若不支持需改为手动维护。
+// 扫描中文主文档 (zh-cn)
+// 兼容 esbuild：声明 any 以通过 TS；运行期若不支持需改为构建脚本生成。
+const zhModules = (import.meta as any).globEager ? (import.meta as any).globEager('./zh-cn/**/*.mdx') : {};
+// 扫描英文变体 (en)
+const enModules = (import.meta as any).globEager ? (import.meta as any).globEager('./en/**/*.mdx') : {};
+
+// 将路径映射为逻辑 id：例如 ./zh-cn/demo/demo.mdx -> demo ；子目录 style-guide/readme.mdx -> style-guide
+function toCanonicalId(rel: string): string {
+  // 去掉前缀 ./zh-cn/ 或 ./en/
+  const cleaned = rel.replace(/^\.\/(zh-cn|en)\//, '');
+  // 去掉扩展名
+  const noExt = cleaned.replace(/\.mdx?$/i, '');
+  // style-guide/readme -> style-guide ; 其它保持文件名
+  if (noExt.endsWith('/readme')) return noExt.replace(/\/readme$/, '');
+  return noExt.split('/').join('-'); // 用 - 链接层级，避免与 locale 规则冲突
+}
+
+// 生成 MDX_SOURCES 初始映射（中文为 canonical，英文加 .en 后缀）
+const MDX_SOURCES_INTERNAL: Record<string, any> = { 'readme': rootReadme };
+for (const p in zhModules) {
+  const mod = zhModules[p];
+  const id = toCanonicalId(p.replace(/^\.\//, ''));
+  if (!id) continue;
+  MDX_SOURCES_INTERNAL[id] = mod.default || mod;
+}
+for (const p in enModules) {
+  const mod = enModules[p];
+  const baseId = toCanonicalId(p.replace(/^\.\//, ''));
+  if (!baseId) continue;
+  // 英文变体：追加 .en
+  MDX_SOURCES_INTERNAL[baseId + '.en'] = mod.default || mod;
+}
 
 export interface NavDocItem {
   type?: 'doc';        // 可选标记
@@ -43,52 +66,48 @@ export interface NavGroup {
 }
 
 // MDX 源映射（与 import 名称对应）
-export const MDX_SOURCES: Record<string, string | any> = {
-  'readme': rootReadme, // root README.md
-  demo,
-  example,
-  'example.en': exampleEn,
-  'mdx-component-debug': mdxComponentDebug,
-  'unified-plan': unifiedPlan,
-  'style-guide': styleGuideReadme,
-  'style-guide-obsidian': styleGuideObsidian,
-  'frontformatter-schema': frontmatterSchema,
-  'configuration': configuration,
-  // 'versioning': versioning,
-};
+export const MDX_SOURCES: Record<string, any> = MDX_SOURCES_INTERNAL;
 
 // 顶部导航分组配置（按数组顺序呈现）
-export const NAV_GROUPS: NavGroup[] = [
-  {
-    id: 'demo',
-    label: 'Demo',
-    items: [
-      // Insert README as the first document (pseudo file path points to root)
-      { id: 'readme', file: '../README.md', label: 'README' },
-      { id: 'demo', file: 'demo/demo.mdx', label: '示例文档' },
-      { id: 'example', file: 'demo/example.mdx', label: '第二篇示例' },
-    ],
-  },
-  {
-    id: 'dev',
-    label: 'Dev',
-    items: [
-      { id: 'mdx-component-debug', file: 'dev/mdx-component-debug.mdx', label: '组件调试', draft: true },
-      { id: 'unified-plan', file: 'dev/unified-plan.mdx', label: '渲染管线设计' },
-      {
-        type: 'category',
-        id: 'style-guide',
-        label: 'Style Guide',
-        defaultId: 'style-guide',
-        items: [
-          { id: 'style-guide', file: 'dev/style-guide/readme.mdx', label: '概览' },
-          { id: 'style-guide-obsidian', file: 'dev/style-guide/obsidian.mdx', label: 'Obsidian 风格' },
-        ]
-      }
-      ,
-      { id: 'frontformatter-schema', file: 'dev/frontformatter-schema.mdx', label: 'Frontmatter Schema' }
-      ,{ id: 'configuration', file: 'dev/configuration.mdx', label: '配置与使用' }
-  // { id: 'versioning', file: 'dev/versioning.mdx', label: '版本与别名' }
-    ],
-  },
-];
+// 基于 zh-cn 模块构建导航组：
+// 规则：demo/* -> Demo 组；dev/* -> Dev 组；style-guide/* 聚合为分类
+function buildNavGroups(): NavGroup[] {
+  const demoItems: NavDocItem[] = [
+    { id: 'readme', file: '../README.md', label: 'README' }
+  ];
+  const devItems: NavEntry[] = [];
+  const styleGuideDocs: NavDocItem[] = [];
+
+  for (const p in zhModules) {
+    const rel = p.replace(/^\.\/zh-cn\//, '');
+    if (!rel.endsWith('.mdx')) continue;
+    const id = toCanonicalId('zh-cn/' + rel).replace(/^zh-cn-/, ''); // already normalized
+    if (rel.startsWith('demo/')) {
+      if (id !== 'readme') demoItems.push({ id, file: 'zh-cn/' + rel });
+    } else if (rel.startsWith('dev/style-guide/')) {
+      const sgId = toCanonicalId('zh-cn/' + rel).replace(/^zh-cn-/, '');
+      styleGuideDocs.push({ id: sgId, file: 'zh-cn/' + rel });
+    } else if (rel.startsWith('dev/')) {
+      const devId = toCanonicalId('zh-cn/' + rel).replace(/^zh-cn-/, '');
+      devItems.push({ id: devId, file: 'zh-cn/' + rel });
+    }
+  }
+
+  // style-guide 分类（如果存在内容）
+  if (styleGuideDocs.length) {
+    devItems.push({
+      type: 'category',
+      id: 'style-guide',
+      label: 'Style Guide',
+      defaultId: 'style-guide',
+      items: styleGuideDocs
+    } as NavCategory);
+  }
+
+  return [
+    { id: 'demo', label: 'Demo', items: demoItems },
+    { id: 'dev', label: 'Dev', items: devItems }
+  ];
+}
+
+export const NAV_GROUPS: NavGroup[] = buildNavGroups();

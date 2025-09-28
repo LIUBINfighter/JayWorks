@@ -63,6 +63,7 @@ class MyItemView extends ItemView {
 const DocsApp: React.FC = () => {
   const allIds = docsRegistry.getDocIds();
   const firstGroup = NAV_GROUPS[0];
+  // 使用 canonicalId 列表本身 already canonical; 直接选第一组内第一篇
   const firstDocId = allIds.find(id => docsRegistry.getDoc(id)?.meta.groupId === firstGroup.id);
   const [currentGroup, setCurrentGroup] = useState<string>(firstGroup.id);
   const [currentId, setCurrentId] = useState<string>(firstDocId || allIds[0]);
@@ -104,6 +105,7 @@ const DocsApp: React.FC = () => {
     } finally { setLoading(false); }
   }, [currentId, activeLocale]); // locale 变化时重新获取文档（获取对应语言或 fallback）
 
+  // groupDocs 需在 locale 变化后重新计算（list() 本身按 locale 解析）
   const groupDocs = docsRegistry.list().filter(r => r.meta.groupId === currentGroup);
 
   // 统一的文档选择：如果目标文档属于其它 group，同步切换 group，再设置当前文档
@@ -141,17 +143,18 @@ const DocsApp: React.FC = () => {
   // 如果当前文档不在当前组，自动切到该组首篇
   useEffect(() => {
     if (!currentId) return;
-  const rec = docsRegistry.getDoc(currentId);
-    if (rec && rec.meta.groupId !== currentGroup) {
+    const rec = docsRegistry.getDoc(currentId);
+    // 当前文档如果不属于当前组，或者已经解析不到（locale 变化后可能）则回退该组第一篇
+    if (!rec || rec.meta.groupId !== currentGroup) {
       const firstInGroup = groupDocs[0];
-      if (firstInGroup) setCurrentId(firstInGroup.meta.id);
+      if (firstInGroup) setCurrentId(firstInGroup.meta.canonicalId || firstInGroup.meta.id);
     }
-  }, [currentGroup]);
+  }, [currentGroup, activeLocale]);
 
   const handleGroupChange = (gid: string) => {
     setCurrentGroup(gid);
-  const first = docsRegistry.list().find(r => r.meta.groupId === gid);
-    if (first) setCurrentId(first.meta.id);
+    const first = docsRegistry.list().find(r => r.meta.groupId === gid);
+    if (first) setCurrentId(first.meta.canonicalId || first.meta.id);
   };
 
   const currentDoc = currentId ? docsRegistry.getDoc(currentId) : undefined;

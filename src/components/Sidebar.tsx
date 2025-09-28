@@ -22,7 +22,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentId, docs, onSelect, gro
 
   const toggleCat = (id: string) => setCollapsed(c => ({ ...c, [id]: !c[id] }));
 
-  const docMap = useMemo(() => new Map(docs.map(d => [d.meta.id, d])), [docs]);
+  // 建立索引：既支持物理 id（含语言后缀），也支持 canonicalId
+  const docMap = useMemo(() => {
+    const m = new Map<string, DocRecord>();
+    for (const d of docs) {
+      m.set(d.meta.id, d);
+      if (d.meta.canonicalId) m.set(d.meta.canonicalId, d);
+    }
+    return m;
+  }, [docs]);
 
   if (!docs.length) {
     return (
@@ -58,10 +66,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentId, docs, onSelect, gro
               {visibleDocs.map(d => {
                 const rec = docMap.get(d.id);
                 if (!rec) return null;
-                const active = rec.meta.id === currentId;
+                const active = (rec.meta.canonicalId || rec.meta.id) === currentId;
                 return (
                   <li key={rec.meta.id} className={active ? 'active' : ''}>
-                    <a href="#" onClick={(e) => { e.preventDefault(); onSelect(rec.meta.id); }}>
+                    <a href="#" onClick={(e) => { e.preventDefault(); onSelect(rec.meta.canonicalId || rec.meta.id); }}>
                       {rec.meta.navLabel || rec.meta.title}
                     </a>
                   </li>
@@ -76,10 +84,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentId, docs, onSelect, gro
     if (doc.draft) return null;
     const rec = docMap.get(doc.id);
     if (!rec) return null;
-    const active = rec.meta.id === currentId;
+    const active = (rec.meta.canonicalId || rec.meta.id) === currentId;
     return (
       <li key={rec.meta.id} className={active ? 'active' : ''}>
-        <a href="#" onClick={(e) => { e.preventDefault(); onSelect(rec.meta.id); }}>
+        <a href="#" onClick={(e) => { e.preventDefault(); onSelect(rec.meta.canonicalId || rec.meta.id); }}>
           {rec.meta.navLabel || rec.meta.title}
         </a>
       </li>
