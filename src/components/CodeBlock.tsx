@@ -179,10 +179,10 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ lang, code, html }) => {
       </div>
       <div className="jw-codeblock-panels">
         <pre className="jw-codeblock-pre" data-mode="code" data-active={tab==='code'}>
-          {(!isMermaid && html) ? (
+          {html && !isMermaid ? (
             <span className="jw-codeblock-static" dangerouslySetInnerHTML={{ __html: html }} />
           ) : (
-            <code ref={codeRef} className={lang ? 'language-' + lang : undefined}>{isMermaid ? '' : code}</code>
+            <code ref={codeRef} className={lang ? 'language-' + lang : undefined}>{code}</code>
           )}
         </pre>
         {isMermaid && (

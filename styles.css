@@ -169,10 +169,8 @@ code.hljs .hljs-comment, code.hljs .hljs-quote { color:#5c6370; font-style:itali
 code.hljs .hljs-deletion { color:#e06c75; }
 code.hljs .hljs-number { color:#d19a66; }
 code.hljs .hljs-attr, code.hljs .hljs-attribute { color:#e5c07b; }
-.jw-codeblock[data-lang="mermaid"] .jw-codeblock-pre { display:none; }
-.jw-codeblock[data-lang="mermaid"]::after { content:'Mermaid diagram'; display:block; padding:12px; font-size:12px; font-style:italic; opacity:0.7; }
-/* 新版 CodeBlock tabs */
-.jw-codeblock-mermaid .jw-codeblock-pre { display:block !important; }
+/* 旧的 mermaid 单视图样式已移除，避免强制显示 code 面板导致图表页签出现代码。 */
+/* 新版 CodeBlock 使用 data-active 切换，不再需要基于 data-lang 的强制显隐。 */
 .jw-codeblock .jw-codeblock-bar { display:flex; align-items:center; gap:12px; }
 .jw-codeblock-tabs { display:flex; gap:4px; }
 .jw-codeblock-tabs button { background:transparent; border:1px solid var(--background-modifier-border); padding:2px 8px; font-size:11px; border-radius:4px; cursor:pointer; color:var(--text-muted); }
