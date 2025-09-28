@@ -79,3 +79,44 @@ export { hljs };
 function escapeHtml(str: string) {
   return str.replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[s] as string));
 }
+
+/**
+ * 将源码静态高亮并生成带行号/可选 diff / 指定行高亮 的 HTML 结构。
+ * 结构与 highlightjs-line-numbers.js 输出保持兼容：
+ * <code class="hljs language-xxx"><table class="hljs-ln">...</table></code>
+ */
+export function renderHighlightedHtml(code: string, lang?: string, opts: { highlightLines?: number[] } = {}) {
+  ensure();
+  const { highlightLines } = opts;
+  let highlighted = '';
+  // 保留原始行用于 diff / 指定行标记
+  const rawTrimmed = code.replace(/\n$/,'');
+  const rawLines = rawTrimmed.split('\n');
+  try {
+    if (lang && hljs.getLanguage(lang)) {
+      highlighted = hljs.highlight(rawTrimmed, { language: lang }).value;
+    } else {
+      highlighted = hljs.highlightAuto(rawTrimmed).value;
+    }
+  } catch {
+    highlighted = escapeHtml(rawTrimmed);
+  }
+  const highlightedLines = highlighted.split('\n');
+  const rows: string[] = [];
+  for (let i=0;i<rawLines.length;i++) {
+    const lineNumber = i+1;
+    // 若高亮后的行数不一致（极罕见），使用空字符串兜底
+    const lineHtml = highlightedLines[i] ?? '';
+    const raw = rawLines[i];
+    const trimmed = raw.trimStart();
+    const classes: string[] = ['hljs-ln-line'];
+    if (trimmed.startsWith('@@')) classes.push('diff-hunk');
+    else if (trimmed.startsWith('+') && !trimmed.startsWith('+++')) classes.push('diff-add');
+    else if (trimmed.startsWith('-') && !trimmed.startsWith('---')) classes.push('diff-del');
+    if (highlightLines && highlightLines.includes(lineNumber)) classes.push('highlight-line');
+    rows.push(`<tr class="${classes.join(' ')}" data-line="${lineNumber}"><td class="hljs-ln-numbers" data-line-number="${lineNumber}"></td><td class="hljs-ln-code"><span>${lineHtml || '&nbsp;'}</span></td></tr>`);
+  }
+  const table = `<table class="hljs-ln"><tbody>${rows.join('')}</tbody></table>`;
+  const codeEl = `<code class="hljs${lang? ' language-'+lang: ''}">${table}</code>`;
+  return { html: codeEl };
+}

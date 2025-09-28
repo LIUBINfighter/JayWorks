@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 // @ts-ignore lucide-react 可能暂无类型声明或需要安装对应类型
 import { Copy, Check, Code as CodeIcon, Image as ImageIcon, FileCode2 } from 'lucide-react';
-import { highlightElement } from '../utils/codeHighlight';
 
 type TabId = 'code' | 'diagram';
 
@@ -9,7 +8,8 @@ export interface CodeBlockProps {
   lang?: string;
   code: string;
   meta?: string;
-  highlightLines?: number[]; // 从 rehype 解析注入
+  highlightLines?: number[]; // 从 rehype 解析注入（静态阶段已用）
+  html?: string; // 静态预渲染高亮后的 HTML（非 mermaid）
 }
 
 /**
@@ -18,7 +18,7 @@ export interface CodeBlockProps {
  * - 一键复制
  * - 未来可扩展：行号 / 高亮行 / 折叠 / 运行按钮
  */
-export const CodeBlock: React.FC<CodeBlockProps> = ({ lang, code, highlightLines }) => {
+export const CodeBlock: React.FC<CodeBlockProps> = ({ lang, code, html }) => {
   const isMermaid = (lang === 'mermaid');
   const [copied, setCopied] = useState(false);
   const [imgCopied, setImgCopied] = useState(false);
@@ -130,46 +130,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ lang, code, highlightLines
     }
   };
 
-  const codeRef = useRef<HTMLElement | null>(null);
-
-  // 初次渲染后进行语法高亮与行号处理，再做 diff 标记
-  const highlightedSignatureRef = useRef<string | null>(null);
-  const runHighlight = (force = false) => {
-    if (!codeRef.current) return;
-    const sig = `${lang}|${code.length}|${highlightLines?.join(',') || ''}`;
-    if (!force && highlightedSignatureRef.current === sig) return; // 避免重复高亮
-    highlightedSignatureRef.current = sig;
-    const el = codeRef.current;
-    el.textContent = code.replace(/\n$/, '');
-    const original = el.textContent;
-    try { highlightElement(el, lang); } catch { el.textContent = original || code; }
-    if (!el.textContent) el.textContent = original || code;
-    // 清理旧行标记（避免重复加类）
-    el.querySelectorAll('tr.hljs-ln-line.diff-add, tr.hljs-ln-line.diff-del, tr.hljs-ln-line.diff-hunk, tr.hljs-ln-line.highlight-line').forEach(tr => {
-      tr.classList.remove('diff-add','diff-del','diff-hunk','highlight-line');
-    });
-    const lineNodes = el.querySelectorAll('[data-line-number]');
-    lineNodes.forEach((lineSpan) => {
-      const parent = lineSpan.parentElement; if (!parent) return;
-      const lnAttr = (lineSpan as HTMLElement).getAttribute('data-line-number');
-      const lineNumber = lnAttr ? parseInt(lnAttr, 10) : undefined;
-      const codeTextEl = parent.querySelector('.hljs-ln-code');
-      const text = (codeTextEl ? codeTextEl.textContent : parent.textContent) || '';
-      const trimmed = text.trimStart();
-      if (trimmed.startsWith('@@')) parent.classList.add('diff-hunk');
-      else if (trimmed.startsWith('+') && !trimmed.startsWith('+++')) parent.classList.add('diff-add');
-      else if (trimmed.startsWith('-') && !trimmed.startsWith('---')) parent.classList.add('diff-del');
-      if (highlightLines && lineNumber && highlightLines.includes(lineNumber)) parent.classList.add('highlight-line');
-    });
-  };
-
-  // 高亮：使用 layoutEffect 保证在浏览器绘制前完成，减少闪烁
-  useLayoutEffect(() => { if (!isMermaid) runHighlight(); }, [code, lang, isMermaid, highlightLines]);
-
-  // Mermaid：切换到 code 时强制一次高亮（force）
-  useLayoutEffect(() => {
-    if (isMermaid && tab === 'code') runHighlight(true);
-  }, [tab, isMermaid, code, lang, highlightLines]);
+  const codeRef = useRef<HTMLElement | null>(null); // 仅 mermaid 或静态失败回退时使用
 
   const handleTabSwitch = (next: TabId) => setTab(next);
 
@@ -218,7 +179,11 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ lang, code, highlightLines
       </div>
       <div className="jw-codeblock-panels">
         <pre className="jw-codeblock-pre" data-mode="code" data-active={tab==='code'}>
-          <code ref={codeRef} className={lang ? 'language-' + lang : undefined} />
+          {(!isMermaid && html) ? (
+            <span className="jw-codeblock-static" dangerouslySetInnerHTML={{ __html: html }} />
+          ) : (
+            <code ref={codeRef} className={lang ? 'language-' + lang : undefined}>{isMermaid ? '' : code}</code>
+          )}
         </pre>
         {isMermaid && (
           <div className="jw-codeblock-diagram" data-mode="diagram" data-active={tab==='diagram'}>

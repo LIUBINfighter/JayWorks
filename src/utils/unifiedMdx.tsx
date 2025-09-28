@@ -11,6 +11,7 @@ import remarkGfm from 'remark-gfm';
 import remarkRehype from 'remark-rehype';
 import rehypeReact from 'rehype-react';
 import matter from 'gray-matter';
+import { renderHighlightedHtml } from './codeHighlight';
 // 自定义：代码块转换为 <CodeBlock /> 组件
 
 function rehypeCodeBlockToComponent() {
@@ -46,9 +47,18 @@ function rehypeCodeBlockToComponent() {
               if (lines.length) highlightLines = Array.from(new Set(lines)).sort((a,b)=>a-b);
             }
           }
+          // 对非 mermaid 代码块静态高亮；mermaid 仍由运行时渲染
+          let html: string | undefined;
+          if (lang !== 'mermaid') {
+            try {
+              html = renderHighlightedHtml(codeText, lang, { highlightLines }).html;
+            } catch (e) {
+              // 失败时忽略，仍走运行时（退化为旧逻辑）
+            }
+          }
           node.tagName = 'CodeBlock';
           node.children = [];
-          node.properties = { code: codeText, lang, meta: metaRaw || undefined, highlightLines };
+          node.properties = { code: codeText, lang, meta: metaRaw || undefined, highlightLines, html };
         }
       }
     };
