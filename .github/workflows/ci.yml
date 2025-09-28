@@ -1,73 +1,111 @@
 name: CI
 
 on:
-  push:
-    branches: [ master, dev ]
-  pull_request:
-    branches: [ master, dev ]
-  workflow_dispatch:
+    push:
+        branches: [master, dev]
+    pull_request:
+        branches: [master, dev]
+    workflow_dispatch:
 
 jobs:
-  lint-and-build:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    lint-and-build:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: true
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  persist-credentials: true
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+                  cache: "npm"
 
-      - name: Install dependencies
-        run: npm ci
+            - name: Install dependencies
+              run: npm ci
 
-      - name: Run lint
-        run: npm run lint
+            - name: Run lint
+              run: npm run lint
 
-      - name: Run formatting
-        run: npm run format
-      - name: Commit and push formatted code
-        if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev') }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git diff --quiet || (git add . && git commit -m "chore: format code" && git push)
+            - name: Run formatting
+              run: npm run format
+            - name: Commit and push formatted code
+              if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev') }}
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+                  git diff --quiet || (git add . && git commit -m "chore: format code" && git push)
 
-      - name: Build project
-        run: npm run build
+            - name: Build project
+              run: npm run build
 
-  codeql-analysis:
-    name: CodeQL Analysis
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      actions: read
-      security-events: write
+    codeql-analysis:
+        name: CodeQL Analysis
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            actions: read
+            security-events: write
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: javascript
-          # include custom queries
-          queries: ./.github/codeql-custom-queries
+            - name: Initialize CodeQL
+              uses: github/codeql-action/init@v3
+              with:
+                  languages: javascript
+                  # include custom queries
+                  queries: ./.github/codeql-custom-queries
 
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+            - name: Autobuild
+              uses: github/codeql-action/autobuild@v3
 
-      - name: Run CodeQL database analysis
-        uses: github/codeql-action/analyze@v3
-        with:
-          category: "security-and-quality"
+            - name: Run CodeQL database analysis
+              uses: github/codeql-action/analyze@v3
+              with:
+                  category: "security-and-quality"
 
+            - name: Version sync check (manifest/package/tag)
+              if: always()
+              run: |
+                  echo "Checking version consistency..."
+                  PKG_VERSION=$(node -p "require('./package.json').version")
+                  MANIFEST_VERSION=$(node -p "require('./manifest.json').version")
+                  echo "package.json version: $PKG_VERSION"
+                  echo "manifest.json version: $MANIFEST_VERSION"
+                  if [ "$PKG_VERSION" != "$MANIFEST_VERSION" ]; then
+                    echo "::error::Version mismatch: package.json ($PKG_VERSION) != manifest.json ($MANIFEST_VERSION)" >&2
+                    exit 1
+                  fi
+
+                  # Detect tag (supports refs/tags/v1.2.3 or refs/tags/1.2.3)
+                  if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+                    RAW_TAG=${GITHUB_REF#refs/tags/}
+                    # Strip leading v if present
+                    STRIPPED_TAG=${RAW_TAG#v}
+                    echo "Git tag detected: $RAW_TAG (normalized: $STRIPPED_TAG)"
+                    if [ "$STRIPPED_TAG" != "$PKG_VERSION" ]; then
+                      echo "::error::Git tag ($RAW_TAG) does not match version ($PKG_VERSION)" >&2
+                      exit 1
+                    fi
+                  else
+                    # Also attempt to find an exact tag pointing at HEAD (optional)
+                    CURRENT_TAG=$(git tag --points-at HEAD | head -n 1 || true)
+                    if [ -n "$CURRENT_TAG" ]; then
+                      STRIPPED_TAG=${CURRENT_TAG#v}
+                      echo "Tag pointing at HEAD: $CURRENT_TAG (normalized: $STRIPPED_TAG)"
+                      if [ "$STRIPPED_TAG" != "$PKG_VERSION" ]; then
+                        echo "::error::Tag at HEAD ($CURRENT_TAG) does not match version ($PKG_VERSION)" >&2
+                        exit 1
+                      fi
+                    else
+                      echo "No tag at HEAD; skipping git tag/version comparison." 
+                    fi
+                  fi
+                  echo "Version synchronization passed."
