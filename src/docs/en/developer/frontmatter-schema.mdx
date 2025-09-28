@@ -1,0 +1,55 @@
+---
+title: Frontmatter Specifications
+description: Frontmatter fields and parsing strategies supported by JayWorks built-in docs (from original frontformatter-schema.mdx).
+updated: 2025-09-28
+---
+
+This page integrates the original `frontformatter-schema.mdx` content, describing currently parsed fields, priorities, and future extensions.
+
+## Supported Fields
+
+| Field | Type | Role | Notes |
+| ---- | ---- | ---- | ---- |
+| title | string | Page main title | Sidebar default display name fallback source |
+| description | string | Subtitle / summary | Available for Footer / search |
+| tags | string[] / string | Tag collection | Strings split into arrays |
+| updated | date string | Update time (priority) | Ignored if parsing fails |
+| date | date string | Fallback update time | Used if updated missing |
+| navLabel | string | Force override navigation display text | Higher than title/label |
+| order | number | Reserved sorting | Not currently enforced |
+
+Unknown fields are preserved as-is for component consumption.
+
+## Parsing Order
+
+1. Parse YAML frontmatter.
+2. Extract fields and standardize (dates to timestamp).
+3. Generate `DocMeta` (including id, slug, navLabel, etc.).
+4. Filter draft (navigation layer only).
+
+## Tags Splitting Example
+
+```mdx
+---
+tags: a,b; c   d   e
+---
+```
+Parsed as: `['a','b','c','d','e']`
+
+## FAQ
+
+| Question | Answer |
+| ---- | ---- |
+| Does frontmatter.draft take effect? | Currently not, only navigation draft controls visibility. |
+| Order doesn't change order? | Still follows explicit navigation declaration order; order reserved for future mixed sorting strategies. |
+
+## Future Extensions Placeholder
+
+| Field | Possible Uses |
+| ---- | ---- |
+| version | Multi-version doc branching |
+| locale | i18n system mapping |
+| pagination_prev / pagination_next | Override default pagination deduction |
+
+---
+More debug details see "Developer → MDX Debug Records".

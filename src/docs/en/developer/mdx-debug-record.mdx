@@ -1,0 +1,39 @@
+---
+title: MDX Debug Records
+description: Refined problem analysis and fix summary from original mdx-component-debug.mdx.
+updated: 2025-09-28
+---
+
+Records the root cause of components like `<SimpleButton />` initially being downgraded to empty `<div>` and fix strategies (source doc: mdx-component-debug.mdx).
+
+## Root Cause
+
+`remark-rehype` did not pass through `mdxJsx*` nodes → node semantics lost → rehype-react couldn't match components → fallback to plain elements.
+
+## Fix Key Points
+
+| Step | Description |
+| ---- | ---- |
+| passThrough | Add `mdxJsx*` / `mdxjsEsm` in remark-rehype |
+| Custom plugin | Convert mdxJsx* to standard element nodes |
+| Property whitelist | Only allow literals, boolean short attributes |
+| Component whitelist | Registry exposes safe components; unknown tags ignored |
+
+## Property Support Matrix
+
+| Type | Supported |
+| ---- | ---- |
+| Strings | ✅ |
+| Booleans (valueless) | ✅ |
+| Numbers | As strings (pending enhancement) |
+| Expressions | ❌ |
+| Objects/Arrays | ❌ |
+
+## Still in Planning
+
+- Action string mapping (reduce function passing needs).
+- Safe parsing of number/JSON properties.
+- Processor caching and performance measurement.
+
+---
+More context refer to "Developer → Rendering Pipeline".
