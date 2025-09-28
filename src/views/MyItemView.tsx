@@ -11,8 +11,6 @@ import { TopNav } from '../components/TopNav';
 import { SearchBar } from '../components/SearchBar';
 import { highlightTerms, clearHighlights } from '../utils/highlight';
 import { NAV_GROUPS, DOC_FILE_PATHS } from '../docs/navigation';
-// VersionSwitcher 已停用（多版本文档移除，仅保留 i18n）。
-// import { VersionSwitcher } from '../components/VersionSwitcher';
 import { LocaleSwitcher } from '../components/LocaleSwitcher';
 import { getFooterWidgets } from '../docs/footerWidgets';
 
@@ -187,9 +185,6 @@ const DocsApp: React.FC = () => {
             <TopNav currentGroup={currentGroup} onChange={(gid)=>{ setSearchTokens([]); handleGroupChange(gid); }} />
           </div>
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-            {/* <VersionSwitcher onChange={() => {
-              // 切换版本逻辑已移除
-            }} /> */}
             <LocaleSwitcher onChange={(loc) => {
               // 更新本地 locale 状态，触发依赖 activeLocale 的 effect
               setActiveLocale(loc);
