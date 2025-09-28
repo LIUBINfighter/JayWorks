@@ -24,6 +24,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ lang, code, highlightLines
   const [imgCopied, setImgCopied] = useState(false);
   const [imgCopying, setImgCopying] = useState(false);
   const [imgCopyError, setImgCopyError] = useState<string | null>(null);
+  // 初始默认展示代码而不是图表，保证首次就能渲染并高亮源码；如果希望仍默认图表，可保持 diagram 但需要在切换时触发一次高亮。
   const [tab, setTab] = useState<TabId>(isMermaid ? 'diagram' : 'code');
   const [diagramError, setDiagramError] = useState<string | null>(null);
   const [svgHtml, setSvgHtml] = useState<string | null>(null);
@@ -156,6 +157,16 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ lang, code, highlightLines
       }
     });
   }, [code, lang, isMermaid, highlightLines]);
+
+  // Mermaid 情况：当从图表切到源码时，此时 <code> 才首次挂载，需要显式执行一次高亮。
+  useEffect(() => {
+    if (!isMermaid) return; // 仅针对 mermaid
+    if (tab !== 'code') return;
+    if (!codeRef.current) return;
+    const el = codeRef.current;
+    el.textContent = code.replace(/\n$/, '');
+    highlightElement(el, lang);
+  }, [tab, isMermaid, code, lang]);
 
   return (
     <div className={"jw-codeblock" + (isMermaid ? ' jw-codeblock-mermaid' : '')} data-lang={lang || ''}>
