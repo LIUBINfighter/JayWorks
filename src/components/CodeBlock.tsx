@@ -18,7 +18,7 @@ export interface CodeBlockProps {
  * - 一键复制
  * - 未来可扩展：行号 / 高亮行 / 折叠 / 运行按钮
  */
-export const CodeBlock: React.FC<CodeBlockProps> = ({ lang, code }) => {
+export const CodeBlock: React.FC<CodeBlockProps> = ({ lang, code, highlightLines }) => {
   const isMermaid = (lang === 'mermaid');
   const [copied, setCopied] = useState(false);
   const [imgCopied, setImgCopied] = useState(false);
@@ -135,23 +135,27 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ lang, code }) => {
   useEffect(() => {
     if (!codeRef.current || isMermaid) return;
     const el = codeRef.current;
-    // 设置文本内容（保持最原始，避免手动拆行）
+    // 重置内容，移除之前 highlight.js 注入的结构
     el.textContent = code.replace(/\n$/, '');
     highlightElement(el, lang);
-    // diff 标记：行号插件生成的结构中每一行通常是 .hljs-ln-line > span.hljs-ln-code
-    // 兼容插件实现：查找具有 data-line-number 的元素
+    // 标记 diff 行与手动高亮行
     const lineNodes = el.querySelectorAll('[data-line-number]');
     lineNodes.forEach((lineSpan) => {
-      const parent = lineSpan.parentElement; // .hljs-ln-line
+      const parent = lineSpan.parentElement; // tr.hljs-ln-line
       if (!parent) return;
+      const lnAttr = (lineSpan as HTMLElement).getAttribute('data-line-number');
+      const lineNumber = lnAttr ? parseInt(lnAttr, 10) : undefined;
       const codeTextEl = parent.querySelector('.hljs-ln-code');
       const text = (codeTextEl ? codeTextEl.textContent : parent.textContent) || '';
       const trimmed = text.trimStart();
       if (trimmed.startsWith('@@')) parent.classList.add('diff-hunk');
       else if (trimmed.startsWith('+') && !trimmed.startsWith('+++')) parent.classList.add('diff-add');
       else if (trimmed.startsWith('-') && !trimmed.startsWith('---')) parent.classList.add('diff-del');
+      if (highlightLines && lineNumber && highlightLines.includes(lineNumber)) {
+        parent.classList.add('highlight-line');
+      }
     });
-  }, [code, lang, isMermaid]);
+  }, [code, lang, isMermaid, highlightLines]);
 
   return (
     <div className={"jw-codeblock" + (isMermaid ? ' jw-codeblock-mermaid' : '')} data-lang={lang || ''}>
