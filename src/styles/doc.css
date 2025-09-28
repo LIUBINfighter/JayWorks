@@ -126,6 +126,8 @@ mark.jw-search-hit { background:var(--text-highlight-bg,var(--text-selection)); 
 .jw-docs-content th, .jw-docs-content td { border:1px solid var(--background-modifier-border); padding:6px 8px; text-align:left; vertical-align:top; }
 .jw-docs-content th { background:var(--background-secondary); font-weight:600; }
 .jw-docs-content tr:nth-child(even) td { background:var(--background-secondary-alt, var(--background-primary)); }
+/* 代码高亮行号表格不继承文档表格条纹背景，恢复统一底色 */
+code.hljs table.hljs-ln tr:nth-child(even) td { background:transparent; }
 /* 仅在表格单元格内的行内代码做弱底色，不影响独立 CodeBlock 组件内部 code */
 .jw-docs-content table code { background:var(--background-modifier-hover); padding:2px 4px; border-radius:4px; font-size:12px; }
 /* --- end docs styles --- */
