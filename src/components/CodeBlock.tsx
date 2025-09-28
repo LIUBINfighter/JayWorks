@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 // @ts-ignore lucide-react 可能暂无类型声明或需要安装对应类型
 import { Copy, Check, Code as CodeIcon, Image as ImageIcon, FileCode2 } from 'lucide-react';
-import { highlight } from '../utils/codeHighlight';
+import { highlightElement } from '../utils/codeHighlight';
 
 type TabId = 'code' | 'diagram';
 
 export interface CodeBlockProps {
   lang?: string;
   code: string;
+  meta?: string;
+  highlightLines?: number[]; // 从 rehype 解析注入
 }
 
 /**
@@ -127,7 +129,29 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ lang, code }) => {
     }
   };
 
-  const codeHighlighted = highlight(code, lang);
+  const codeRef = useRef<HTMLElement | null>(null);
+
+  // 初次渲染后进行语法高亮与行号处理，再做 diff 标记
+  useEffect(() => {
+    if (!codeRef.current || isMermaid) return;
+    const el = codeRef.current;
+    // 设置文本内容（保持最原始，避免手动拆行）
+    el.textContent = code.replace(/\n$/, '');
+    highlightElement(el, lang);
+    // diff 标记：行号插件生成的结构中每一行通常是 .hljs-ln-line > span.hljs-ln-code
+    // 兼容插件实现：查找具有 data-line-number 的元素
+    const lineNodes = el.querySelectorAll('[data-line-number]');
+    lineNodes.forEach((lineSpan) => {
+      const parent = lineSpan.parentElement; // .hljs-ln-line
+      if (!parent) return;
+      const codeTextEl = parent.querySelector('.hljs-ln-code');
+      const text = (codeTextEl ? codeTextEl.textContent : parent.textContent) || '';
+      const trimmed = text.trimStart();
+      if (trimmed.startsWith('@@')) parent.classList.add('diff-hunk');
+      else if (trimmed.startsWith('+') && !trimmed.startsWith('+++')) parent.classList.add('diff-add');
+      else if (trimmed.startsWith('-') && !trimmed.startsWith('---')) parent.classList.add('diff-del');
+    });
+  }, [code, lang, isMermaid]);
 
   return (
     <div className={"jw-codeblock" + (isMermaid ? ' jw-codeblock-mermaid' : '')} data-lang={lang || ''}>
@@ -173,7 +197,9 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ lang, code }) => {
         </div>
       </div>
       {tab === 'code' && (
-        <pre className="jw-codeblock-pre" data-mode="code"><code dangerouslySetInnerHTML={codeHighlighted} /></pre>
+        <pre className="jw-codeblock-pre" data-mode="code">
+          <code ref={codeRef} className={lang ? 'language-' + lang : undefined} />
+        </pre>
       )}
       {isMermaid && tab === 'diagram' && (
         <div className="jw-codeblock-diagram" data-mode="diagram">

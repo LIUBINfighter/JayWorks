@@ -1,6 +1,9 @@
 // highlight.js 按需引入（无类型声明，使用 ts-ignore）
 // @ts-ignore
 import hljs from 'highlight.js/lib/core';
+// 行号插件按需引入（其会向 hljs 增加 lineNumbersBlock 方法）
+// @ts-ignore
+import 'highlightjs-line-numbers.js';
 // @ts-ignore
 import ts from 'highlight.js/lib/languages/typescript';
 // @ts-ignore
@@ -34,6 +37,23 @@ export function highlight(code: string, lang?: string): { __html: string } {
   }
   try { return { __html: hljs.highlightAuto(code).value }; } catch (e) { return { __html: escapeHtml(code) }; }
 }
+
+export function highlightElement(el: HTMLElement, langHint?: string) {
+  ensure();
+  if (langHint && !el.classList.contains('language-' + langHint)) {
+    el.classList.add('language-' + langHint);
+  }
+  // @ts-ignore
+  hljs.highlightElement(el);
+  // 如果插件已加载，添加行号
+  // @ts-ignore
+  if (typeof hljs.lineNumbersBlock === 'function') {
+    try { // @ts-ignore
+      hljs.lineNumbersBlock(el); } catch (e) { /* ignore */ }
+  }
+}
+
+export { hljs };
 
 function escapeHtml(str: string) {
   return str.replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[s] as string));

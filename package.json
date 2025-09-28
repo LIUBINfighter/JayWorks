@@ -1,6 +1,6 @@
 {
 	"name": "jayworks-template",
-	"version": "1.0.0",
+	"version": "0.3.0",
 	"description": "This is the JayWorks Template for Obsidian Plugin (https://obsidian.md)",
 	"main": "main.js",
 	"type": "module",
@@ -36,6 +36,7 @@
 		"@types/react-dom": "^19.1.9",
 		"gray-matter": "^4.0.3",
 		"highlight.js": "^11.10.0",
+		"highlightjs-line-numbers.js": "^2.8.0",
 		"lucide-react": "^0.475.0",
 		"mark.js": "^8.11.1",
 		"mermaid": "^10.9.1",

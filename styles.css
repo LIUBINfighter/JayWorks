@@ -83,6 +83,22 @@ mark.jw-search-hit { background:var(--text-highlight-bg,var(--text-selection)); 
 .jw-codeblock-copy:hover { background:var(--background-modifier-hover); color:var(--text-accent); }
 .jw-codeblock-pre { margin:0; padding:10px 14px; overflow:auto; font-size:12px; line-height:1.5; }
 .jw-codeblock-pre code { font-family: var(--font-monospace); }
+/* highlightjs-line-numbers 基础结构 */
+code.hljs { display:block; padding:0 !important; }
+code.hljs table.hljs-ln { width:100%; border-collapse:collapse; }
+code.hljs table.hljs-ln tr { border:none; }
+code.hljs table.hljs-ln td { vertical-align:top; border:none; padding:0; }
+code.hljs td.hljs-ln-numbers { user-select:none; text-align:right; width:1%; padding:0 12px 0 4px; opacity:0.55; font-size:11px; color:var(--text-muted); border-right:1px solid var(--background-modifier-border); }
+code.hljs td.hljs-ln-code { padding:0 12px; }
+code.hljs tr.hljs-ln-line { transition: background .15s; }
+code.hljs tr.hljs-ln-line:hover { background:var(--background-modifier-hover); }
+/* diff 行：通过 JS 给 tr.hljs-ln-line 添加 diff-* 类 */
+code.hljs tr.hljs-ln-line.diff-add { background:rgba(46,160,67,0.15); box-shadow:inset 2px 0 #2ea043; }
+code.hljs tr.hljs-ln-line.diff-del { background:rgba(248,81,73,0.18); box-shadow:inset 2px 0 #f85149; }
+code.hljs tr.hljs-ln-line.diff-hunk { background:rgba(56,139,253,0.15); box-shadow:inset 2px 0 #388bfd; }
+code.hljs tr.hljs-ln-line.diff-add:hover { background:rgba(46,160,67,0.25); }
+code.hljs tr.hljs-ln-line.diff-del:hover { background:rgba(248,81,73,0.28); }
+code.hljs tr.hljs-ln-line.diff-hunk:hover { background:rgba(56,139,253,0.25); }
 .jw-codeblock[data-lang="mermaid"] .jw-codeblock-pre { display:none; }
 .jw-codeblock[data-lang="mermaid"]::after { content:'Mermaid diagram'; display:block; padding:12px; font-size:12px; font-style:italic; opacity:0.7; }
 /* 新版 CodeBlock tabs */
