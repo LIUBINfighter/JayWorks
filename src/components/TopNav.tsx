@@ -1,12 +1,13 @@
 import React from 'react';
-import { NAV_GROUPS } from '../docs/navigation';
+import { NAV_GROUPS, getGroupLabel } from '../docs/navigation';
 
 interface TopNavProps {
   currentGroup: string;
   onChange(groupId: string): void;
+  locale?: string;
 }
 
-export const TopNav: React.FC<TopNavProps> = ({ currentGroup, onChange }) => {
+export const TopNav: React.FC<TopNavProps> = ({ currentGroup, onChange, locale }) => {
   return (
     <div className="jw-docs-topnav">
       {NAV_GROUPS.map(g => (
@@ -15,7 +16,7 @@ export const TopNav: React.FC<TopNavProps> = ({ currentGroup, onChange }) => {
           className={g.id === currentGroup ? 'active' : ''}
           onClick={() => onChange(g.id)}
         >
-          {g.label}
+          {getGroupLabel(g.id, locale)}
         </button>
       ))}
     </div>

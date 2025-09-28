@@ -1,17 +1,18 @@
 import React, { useState, useMemo } from 'react';
 import { DocRecord } from '../docs/types';
-import { NAV_GROUPS, NavEntry, NavCategory, NavDocItem } from '../docs/navigation';
+import { NAV_GROUPS, NavEntry, NavCategory, NavDocItem, getCategoryLabel } from '../docs/navigation';
 
 interface SidebarProps {
   currentId: string;
   docs: DocRecord[];              // 已扁平化文档（当前组）
   onSelect(id: string): void;
   groupId: string;
+  locale?: string;
 }
 
 function isCategory(entry: NavEntry): entry is NavCategory { return (entry as any).type === 'category'; }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentId, docs, onSelect, groupId }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ currentId, docs, onSelect, groupId, locale }) => {
   // 构建该组的原始导航结构（含分类）
   const group = NAV_GROUPS.find(g => g.id === groupId);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
@@ -59,7 +60,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentId, docs, onSelect, gro
       return (
         <li key={cat.id} className={'jw-cat ' + (isCol ? 'collapsed' : '')}>
           <a href="#" onClick={onClickCat} className="jw-cat-label">
-            <span className="jw-cat-caret">{isCol ? '▸' : '▾'}</span>{cat.label}
+            <span className="jw-cat-caret">{isCol ? '▸' : '▾'}</span>{getCategoryLabel(cat.id, locale)}
           </a>
           {!isCol && (
             <ul className="jw-docs-submenu">

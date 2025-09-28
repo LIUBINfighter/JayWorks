@@ -177,12 +177,12 @@ const DocsApp: React.FC = () => {
   );
 
   return (
-    <ShellLayout
-      sidebar={<Sidebar currentId={currentId} docs={groupDocs} groupId={currentGroup} onSelect={navigateWithoutSearch} />}
+      <ShellLayout
+      sidebar={<Sidebar currentId={currentId} docs={groupDocs} groupId={currentGroup} onSelect={navigateWithoutSearch} locale={activeLocale} />}
       header={
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
           <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-            <TopNav currentGroup={currentGroup} onChange={(gid)=>{ setSearchTokens([]); handleGroupChange(gid); }} />
+            <TopNav currentGroup={currentGroup} onChange={(gid)=>{ setSearchTokens([]); handleGroupChange(gid); }} locale={activeLocale} />
           </div>
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
             <LocaleSwitcher onChange={(loc) => {

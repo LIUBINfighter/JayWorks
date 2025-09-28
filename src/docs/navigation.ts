@@ -140,6 +140,42 @@ export const NAV_GROUPS: NavGroup[] = [
   }
 ];
 
+// 简单的 UI 文本 i18n 表（轻量实现，供导航/侧栏使用）
+// 约定：key 为 docsRegistry 中的 locale 值（如 'zh-CN' / 'en' 等）
+export const NAV_LABELS: Record<string, Record<string, string>> = {
+  'zh-CN': {
+    guide: '指南',
+    reference: '参考',
+    developer: '开发者',
+    'style-guide': '样式指南',
+  },
+  'en': {
+    guide: 'Guide',
+    reference: 'Reference',
+    developer: 'Developer',
+    'style-guide': 'Style guide',
+  }
+};
+
+export function getGroupLabel(groupId: string, locale?: string) {
+  const loc = locale || 'zh-CN';
+  const map = NAV_LABELS[loc] || NAV_LABELS['zh-CN'];
+  return map[groupId] || NAV_GROUPS.find(g => g.id === groupId)?.label || groupId;
+}
+
+export function getCategoryLabel(catId: string, locale?: string) {
+  const loc = locale || 'zh-CN';
+  const map = NAV_LABELS[loc] || NAV_LABELS['zh-CN'];
+  if (map[catId]) return map[catId];
+  // fallback: try to find category label from NAV_GROUPS
+  for (const g of NAV_GROUPS) {
+    for (const it of g.items) {
+      if ((it as any).type === 'category' && (it as any).id === catId) return (it as any).label;
+    }
+  }
+  return catId;
+}
+
 // 提供文档 id -> 源文件相对路径映射（仅针对已进入导航的 canonical 文档）
 export const DOC_FILE_PATHS: Record<string, string> = (() => {
   const map: Record<string, string> = {};
