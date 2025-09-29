@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-// @ts-ignore lucide-react 可能暂无类型声明或需要安装对应类型
 import { Copy, Check, Code as CodeIcon, Image as ImageIcon, FileCode2 } from 'lucide-react';
 
 type TabId = 'code' | 'diagram';
@@ -111,10 +110,8 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ lang, code, html }) => {
           ctx.drawImage(img, 0, 0, targetW, targetH);
           const pngBlob: Blob | null = await new Promise(res => canvas.toBlob(res, 'image/png', 1));
           if (!pngBlob) throw new Error('PNG 生成失败');
-          // @ts-ignore
           const CI = window.ClipboardItem;
           if (!CI) throw new Error('ClipboardItem 不可用');
-          // @ts-ignore
           await navigator.clipboard.write([new CI({ 'image/png': pngBlob })]);
           finish(true);
         } catch (err: any) {

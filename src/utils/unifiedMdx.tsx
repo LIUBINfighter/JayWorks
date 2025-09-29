@@ -1,7 +1,6 @@
 import React from 'react';
 // React 17+ JSX runtime functions for rehype-react@8 automatic mode
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
