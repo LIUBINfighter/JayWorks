@@ -7,8 +7,10 @@ import 'highlightjs-line-numbers.js';
 // 可能通过 (function(root){ ... root.hljs ... })(this) 方式访问全局 hljs。
 // esbuild 打包后未自动将模块导出的 hljs 赋值到 window/globalThis，导致其报 "highlight.js not detected"。
 // 这里显式挂载一次，幂等且安全。
+  // @ts-ignore
 if (typeof globalThis !== 'undefined' && !globalThis.hljs) {
-  globalThis.hljs = hljs;
+  // @ts-ignore
+	globalThis.hljs = hljs;
 }
 import ts from 'highlight.js/lib/languages/typescript';
 import js from 'highlight.js/lib/languages/javascript';
