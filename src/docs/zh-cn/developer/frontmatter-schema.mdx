@@ -1,0 +1,55 @@
+---
+title: Frontmatter 规范
+description: JayWorks 内置文档支持的 frontmatter 字段与解析策略（来自原 frontformatter-schema.mdx）。
+updated: 2025-09-28
+---
+
+本页整合原 `frontformatter-schema.mdx` 内容，描述当前解析的字段、优先级与未来扩展方向。
+
+## 支持字段
+
+| 字段 | 类型 | 作用 | 备注 |
+| ---- | ---- | ---- | ---- |
+| title | string | 页面主标题 | 侧边栏默认显示名回退来源 |
+| description | string | 副标题 / 摘要 | Footer / 搜索可用 |
+| tags | string[] / string | 标签集合 | 字符串会拆分为数组 |
+| updated | date string | 更新时间（优先） | 解析失败忽略 |
+| date | date string | 回退更新时间 | 若 updated 缺失时使用 |
+| navLabel | string | 强制覆盖导航显示文本 | 高于 title/label |
+| order | number | 预留排序 | 当前未强制应用 |
+
+未知字段将原样保留供组件消费。
+
+## 解析顺序
+
+1. 解析 YAML frontmatter。
+2. 提取字段并标准化（日期转 timestamp）。
+3. 生成 `DocMeta`（含 id、slug、navLabel 等）。
+4. 过滤 draft（仅导航层）。
+
+## tags 拆分示例
+
+```mdx
+---
+tags: a,b; c   d   e
+---
+```
+解析为：`['a','b','c','d','e']`
+
+## FAQ
+
+| 问题 | 答案 |
+| ---- | ---- |
+| frontmatter.draft 是否生效？ | 目前不生效，仅导航 draft 控制可见性。 |
+| order 不改变顺序？ | 仍以显式导航声明顺序为准；order 预留未来混排策略。 |
+
+## 未来扩展占位
+
+| 字段 | 可能用途 |
+| ---- | ---- |
+| version | 多版本文档分支 |
+| locale | i18n 体系映射 |
+| pagination_prev / pagination_next | 覆盖默认分页推导 |
+
+---
+更多调试细节见 “开发者 → MDX 调试记录”。

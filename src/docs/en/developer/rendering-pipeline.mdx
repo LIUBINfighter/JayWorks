@@ -1,0 +1,106 @@
+---
+title: Rendering Pipeline (unified / remark / rehype)
+description: Explain how to parse and safely render interactive MDX within an Obsidian plugin using unified.
+updated: 2025-09-28
+---
+
+import { SimpleButton } from '../../components/SimpleButton';
+
+This page explains from an architectural perspective: why choose unified, how to trim it, and how to safely convert MDX components to React elements. Content sourced from the original `unified-plan.mdx`, with appropriate refinement.
+
+## Goals
+
+- Parse Markdown/MDX content from built-in docs (or user notes) into a React Element Tree.
+- Support controlled interactive components (<SimpleButton label="Example" />) but prohibit arbitrary code execution.
+- Keep size controllable (avoid introducing full compilers or runtime eval).
+
+## Dependencies and Trimming
+
+| Module | Role |
+| ---- | ---- |
+| remark-parse | Basic Markdown syntax parsing |
+| remark-mdx | Recognize MDX JSX nodes and ESM blocks |
+| remark-frontmatter | (Optional) Handle YAML frontmatter |
+| remark-rehype | Markdown AST → HTML AST (HAST) bridging |
+| rehype-react | HAST → React Elements |
+
+> Retain and transpile `mdxJsx*` nodes via `passThrough` + custom rehype plugin.
+
+## Core Process Summary
+
+```ts
+unified()
+  .use(remarkParse)
+  .use(remarkMdx)
+  .use(remarkRehype, { passThrough: ['mdxjsEsm','mdxJsxFlowElement','mdxJsxTextElement'] })
+  .use(rehypeMdxJsxToElement)
+  .use(rehypeReact, { createElement: React.createElement, Fragment, components })
+```
+
+Where `rehypeMdxJsxToElement` handles:
+1. Traverse HAST;
+2. Find `mdxJsx*` nodes;
+3. Extract only literal properties;
+4. Produce standard `{ type: 'element', tagName, properties }`;
+5. Ignore other expressions/dangerous content.
+
+## Property Support Scope
+
+| Type | Supported | Notes |
+| ---- | ---- | ---- |
+| String literals | ✅ | `label="Click me"` |
+| Booleans (valueless attributes) | ✅ | `<Comp enabled />` → `enabled=true` |
+| Number literals | ➖ | As strings, can parse later |
+| Expressions `{...}` | ❌ | Prohibited by security policy |
+| Objects/Arrays | ❌ | High parsing cost and security risk |
+
+## Component Registry
+
+Components are exposed through a centralized `registry`:
+
+```ts
+export const components = {
+  SimpleButton,
+  OcrPlayground,
+  // aliases can also be added: simplebutton: SimpleButton
+};
+```
+
+Passed to `rehype-react` during rendering:
+
+```ts
+rehypeReact({ components })
+```
+
+## Performance and Caching
+
+- Small docs can be processed synchronously; large docs can consider async `process` + task queues.
+- Cache the `unified()` created processor (currently no state pollution).
+- If future support for user dynamic editing / hot replacement, enable incremental updates for the same doc (pending research).
+
+## Security Considerations
+
+| Dimension | Strategy |
+| ---- | ---- |
+| Import / ESM | Filter or ignore `mdxjsEsm` |
+| HTML injection | `allowDangerousHtml: false` |
+| Function execution | Prohibit expression properties; use action string mapping |
+| Arbitrary components | Whitelist registration, unknown tags render as empty placeholders |
+
+## Migration Plan (Milestones)
+
+| Phase | Goal |
+| ---- | ---- |
+| M1 | Minimum viable: button/Playground rendering |
+| M2 | Mermaid / code highlighting integration |
+| M3 | Action mapping and richer components |
+| M4 | Search, pagination enhancements, i18n versioning |
+
+## Future Directions
+
+- Enhance expressiveness by parsing number/JSON properties.
+- Component-level action mapping: `<SimpleButton action="copy" />`.
+- Support external themes/dark mode linkage.
+
+---
+For in-depth debugging, refer to "Developer → MDX Debug Records".

@@ -1,0 +1,87 @@
+---
+title: Interactive Diagrams (Mermaid)
+description: Demonstrate Mermaid diagram rendering in built-in docs, source and diagram view switching, and copy capabilities.
+updated: 2025-09-28
+---
+
+This page showcases common Mermaid syntax and current implementation goals:
+
+1. Code blocks marked with ```mermaid support "Source / Diagram" dual tab switching.
+2. Support copying source; copying images (prioritize SVG, fallback to PNG on failure).
+3. Provide error prompts and fallbacks on rendering failure.
+
+> Theme linkage, line numbers/highlighting, folding long diagrams, etc., are still in planning.
+
+## Flowchart
+
+```mermaid
+flowchart TD
+  A[Start] --> B{Condition check?}
+  B -- Yes --> C[Execute task X]
+  B -- No --> D[Execute task Y]
+  C --> E[Archive]
+  D --> E[Archive]
+  E --> F((End))
+```
+
+## Sequence Diagram
+
+```mermaid
+sequenceDiagram
+  participant User
+  participant Plugin as JayWorks
+  participant Engine as MermaidEngine
+  User->>Plugin: Open diagram example
+  Plugin->>Engine: render(source)
+  Engine-->>Plugin: Return SVG
+  Plugin-->>User: Display diagram + action buttons
+```
+
+## Gantt Chart
+
+```mermaid
+gantt
+  title Built-in Mermaid Support Milestones
+  dateFormat  YYYY-MM-DD
+  section Basics
+  Syntax highlighting            :done,    hl, 2025-09-28, 1d
+  Mermaid dynamic loading     :done,    mm, 2025-09-28, 1d
+  section Enhancements
+  Line numbers/highlight lines         :active,  ln, 2025-09-29, 2d
+  Theme linkage            :         th, 2025-10-02, 2d
+```
+
+## State Diagram
+
+```mermaid
+stateDiagram-v2
+  [*] --> Idle
+  Idle --> Loading : Load mermaid
+  Loading --> Ready : Parse success
+  Loading --> Error : Parse failure
+  Error --> Idle : Retry/refresh
+```
+
+## Mind Map (Experimental)
+
+```mermaid
+mindmap
+  root((JayWorks))
+    Internal Docs
+      MDX
+      i18n
+    CodeBlock
+      Highlight
+      Mermaid
+      Copy Source
+      Copy Image
+```
+
+---
+Future enhancement directions:
+
+- Automatically switch Mermaid themes based on system/theme.
+- Allow folding lengthy diagram areas.
+- Export to PNG / SVG to Vault.
+
+Welcome to propose additional examples or enhancement suggestions in issues.

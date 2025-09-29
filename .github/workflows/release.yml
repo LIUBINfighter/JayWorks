@@ -37,4 +37,4 @@ jobs:
           gh release create "$tag" \
             --title="$tag" \
             --draft \
-            main.js manifest.json styles.css jayworks.zip assets.zip 
+            main.js manifest.json styles.css jayworks.zip

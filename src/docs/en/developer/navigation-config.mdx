@@ -1,0 +1,60 @@
+---
+title: Navigation Configuration (navigation.ts)
+description: Explain how to build top and sidebar navigation through NAV_GROUPS and categories, control drafts and pagination order.
+updated: 2025-09-28
+---
+
+This page corresponds to the original `configuration.mdx` content, focusing on what template extenders need to master regarding navigation structure and field semantics.
+
+## Quick Example
+
+```ts
+export const NAV_GROUPS = [
+  { id: 'guide', label: 'Guide', items: [ { id: 'introduction', file: 'en/guide/introduction.mdx' } ] },
+  { id: 'reference', label: 'Reference', items: [ { id: 'plugin-settings', file: 'en/reference/plugin-settings.mdx', draft: true } ] },
+  { id: 'developer', label: 'Developer', items: [ /* ... */ ] }
+];
+```
+
+## Group / Category / Doc Relationships
+
+| Level | Description | Key Fields |
+| ---- | ---- | ---- |
+| Group | Top-level groups | `id`, `label`, `items` |
+| Category | Sidebar collapsible categories | `type: 'category'`, `defaultId` |
+| Doc | Specific document entries | `id`, `file`, `label?`, `draft?` |
+
+> Traversal order: By `NAV_GROUPS` order → group.items order → expand category.items → filter draft → form pagination sequence.
+
+## Draft Strategy
+
+| Location | Meaning |
+| ---- | ---- |
+| doc.draft=true | Document does not appear in navigation and pagination |
+| category.draft=true | Category and all its sub-documents hidden |
+
+frontmatter's `draft` (if any) does not participate in filtering (extensible).
+
+## Frontmatter and Navigation Priority
+
+| Target | Priority |
+| ---- | ---- |
+| Sidebar display text | `navLabel` (frontmatter) > doc.label (navigation) > frontmatter.title > doc.id |
+| Update time | `updated` > `date` > none |
+
+## Common Issues
+
+| Issue | Troubleshooting |
+| ---- | ---- |
+| New doc not showing | Has it been imported and added to `MDX_SOURCES` / `NAV_GROUPS`? |
+| Pagination skips entries | Marked as draft? |
+| Title not updating | Overridden by navLabel? |
+
+## Best Practices
+
+- Plan `navigation.ts` first before creating files to avoid orphan docs.
+- Sync `file` field after path changes to prevent loss.
+- Use `draft: true` during draft iteration to hide, remove when ready to publish.
+
+---
+More field parsing and schema see "Developer → Frontmatter Specifications".

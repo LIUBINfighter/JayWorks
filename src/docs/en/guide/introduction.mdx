@@ -1,0 +1,49 @@
+---
+title: Introduction
+description: Understand the goals and usage of JayWorks' built-in documentation system to quickly build a mental model.
+updated: 2025-09-28
+---
+
+JayWorks is a "built-in documentation + interactive demo" template for Obsidian plugin authors and end users:
+
+- No more switching between browser and editor: core usage, examples, and reference docs are all embedded.
+- Based on Markdown / MDX: write plain text or insert controlled React components.
+- Clear structure: distinguish between "Guide / Reference / Developer" audiences.
+
+## Why Built-in Documentation?
+
+> 80% of common help and introductory information doesn't require jumping to external websites.
+
+- Faster learning feedback: see → click → get results.
+- Unified context: consistent with plugin UI / data structures (no need to re-explain).
+- Offline: available without network.
+
+## Documentation Structure
+
+| Group | Purpose | Typical Content |
+| ---- | ---- | ---- |
+| Guide | Help end users get started | Introduction, core features, diagram examples |
+| Reference | Look up fixed structure information | (Placeholder) Plugin settings |
+| Developer | Plugin template extension/maintenance | Rendering pipeline, navigation config, Frontmatter specs, style guide, debug records |
+
+## Where Should I Start?
+
+1. Browse this page to understand the positioning.
+2. Open "Core Features Overview" to try interactive components.
+3. Need diagrams? Check "Interactive Diagrams (Mermaid)".
+4. Want to customize or extend? Go to the "Developer" group.
+
+## Controlled Component Example
+
+<SimpleButton label="Try clicking" />
+
+> All components are loaded from a whitelist; docs won't execute arbitrary scripts or import statements.
+
+## Future Plans
+
+- Settings panel documentation (complete Reference filling).
+- Search and tag filtering.
+- Multilingual and versioning (introduce as needed).
+
+---
+Ready? Continue reading "Core Features Overview".

@@ -13,8 +13,19 @@ ItemView for SPA (Single Page Application)
 
 Avoid innerHTML and blablabla...
 
+### Data Persistence
+
+loadData()
+saveData()
+这两个方法足以解决大部分问题，不要使用localstorige/indexedDB一类无法被管理的技术
+
+暂时不需要持久化视图状态到工作区。
 
 ### Built-in doc
+
+Local first. No need to open a browser, click, search, locating, find, learn, think......come back and forget.
+
+Keep all essential features and documentation within the workspace. Minimize context switching—help users solve problems and learn directly in Obsidian, without needing to visit external sites.
 
 80%的常用功能不应该离开工作区进行学习和操作，与其打开在线文档进行复杂的加载以及独立维护一个文档网站Repo的开销，不如做成内置的doc
 
@@ -22,9 +33,28 @@ Avoid innerHTML and blablabla...
 
 两层 i18n，一层是应用层字段替换，一层是交互式文档替换。即将考虑支持mdx以便使用React组件而不是笨重的SPA来进行文档呈现。
 
-获取网络资产
-1.必要内容文本，README.md 和 Changelog.md
-2.资产
+i18n是标配无需多言，版本化文档其实只有大版本更新才会有，也就相当于长期维护也就预期2-4版文档，不超过5版（能进化到v4.0.0那都是很后面的开发了），每个版本在其 0.x.y 的 x.y版本中都只会指向当前的最新版Release，最多多一个Beta/next版本，你明白吗？
+
+也就是可能最终都只会有
+
+```md
+0.12.9 (正式版前最后一个版本)
+1.8.2 （正式v1版最后一个版本）
+2.5.3 (v2版最后一个版本)
+3.2.1 （当前v3版最新）
+3.2.x-beta （当前v3版开发/测试）
+```
+
+这种类似的形式。
+
+后来我发现其实没必要版本化控制文档，因为内置文档
+
+### 获取网络资产
+
+0. 初次设置提示
+1. 在SettingTab中提供配置管理资产的页签
+2. 必要内容文本，README.md 和 Changelog.md
+3. 资产通过github release打包
 
 ## Scripts
 
@@ -42,8 +72,12 @@ React 19
 
 ## Inspiration
 
-Almost perfect community plugin [Taitava/obsidian-shellcommands](github.com/Taitava/obsidian-shellcommands).
+Almost perfect community plugin [Taitava/obsidian-shellcommands](https://github.com/Taitava/obsidian-shellcommands).
 
-An opinionated plugin template [polyipseity/obsidian-plugin-template](github.com/polyipseity/obsidian-plugin-template).
+An opinionated plugin template [polyipseity/obsidian-plugin-template](https://github.com/polyipseity/obsidian-plugin-template).
 
-My tiny plugin for guitarist [LIUBINfighter/Obsidian-Tab-Flow](github.com/LIUBINfighter/Obsidian-Tab-Flow).
+My tiny plugin for guitarist [LIUBINfighter/Obsidian-Tab-Flow](https://github.com/LIUBINfighter/Obsidian-Tab-Flow).
+
+Interactive playground for developers to learn [Vue.js](https://vuejs.org/).
+
+[docusaurus.io: Build optimized websites quickly, focus on your content](https://docusaurus.io)

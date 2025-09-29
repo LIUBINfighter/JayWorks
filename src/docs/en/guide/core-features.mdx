@@ -1,0 +1,37 @@
+---
+title: Core Features Overview
+description: Summarize the feature demonstrations from the original demo and example documents, providing an intuitive understanding of the built-in documentation system and controlled MDX components.
+updated: 2025-09-28
+---
+
+This page summarizes the content previously scattered in `demo.mdx` and `example.mdx`, focusing on what end users care most about: what the plugin's built-in documentation view can do and what you can learn here.
+
+## Implemented Capabilities
+
+- Support standard Markdown syntax (headings, lists, quotes, code blocks, etc.).
+- Parse frontmatter metadata (title, description, tags, update time, etc.).
+- Support controlled MDX components (secure whitelist).
+- Code highlighting and (future) Mermaid diagram rendering.
+
+## Interactive Component Examples
+
+<SimpleButton label="Click me" />
+<OcrPlayground initialText="Hello" />
+
+> Currently only supports literal properties; expressions/objects/functions are ignored (see "Developer → Rendering Pipeline").
+
+## Typical Use Cases
+
+| Scenario | Description |
+| ---- | ---- |
+| Quick reading of built-in help | No need to jump to external websites, offline available |
+| View interactive examples | Try components directly in the docs (buttons, Playground, etc.) |
+| Follow step-by-step guides | Can be extended to more detailed operation tutorials in the future |
+
+## Next Recommended Steps
+
+- Want to understand how rendering works? Go to "Developer → Rendering Pipeline".
+- Want to check Frontmatter support? Go to "Developer → Frontmatter Specifications".
+
+---
+If you expect to see more examples (such as tables, diagrams, quote block formats, etc.), feel free to suggest requirements or submit a PR.

@@ -1,0 +1,106 @@
+---
+title: 渲染管线（unified / remark / rehype）
+description: 说明在 Obsidian 插件内如何通过 unified 解析并安全渲染交互式 MDX。
+updated: 2025-09-28
+---
+
+import { SimpleButton } from '../../components/SimpleButton';
+
+本页从架构角度解释：为何选择 unified、如何裁剪、如何将 MDX 组件安全转为 React 元素。其内容来源于原 `unified-plan.mdx`，并做适度精炼。
+
+## 目标
+
+- 将内置文档（或用户笔记）中的 Markdown/MDX 内容解析为 React Element Tree。
+- 支持受控交互组件（<SimpleButton label="示例" />）但禁止任意执行代码。
+- 保持体积可控（避免引入完整编译器或运行时 eval）。
+
+## 依赖与裁剪
+
+| 模块 | 作用 |
+| ---- | ---- |
+| remark-parse | Markdown 基础语法解析 |
+| remark-mdx | 识别 MDX JSX 节点与 ESM 块 |
+| remark-frontmatter | （可选）处理 YAML frontmatter |
+| remark-rehype | Markdown AST → HTML AST（HAST）桥接 |
+| rehype-react | HAST → React Elements |
+
+> 通过 `passThrough` + 自定义 rehype 插件保留并转译 `mdxJsx*` 节点。
+
+## 核心流程摘要
+
+```ts
+unified()
+  .use(remarkParse)
+  .use(remarkMdx)
+  .use(remarkRehype, { passThrough: ['mdxjsEsm','mdxJsxFlowElement','mdxJsxTextElement'] })
+  .use(rehypeMdxJsxToElement)
+  .use(rehypeReact, { createElement: React.createElement, Fragment, components })
+```
+
+其中 `rehypeMdxJsxToElement` 负责：
+1. 遍历 HAST；
+2. 找到 `mdxJsx*` 节点；
+3. 仅提取字面量属性；
+4. 产出标准 `{ type: 'element', tagName, properties }`；
+5. 其余表达式/危险内容忽略。
+
+## 属性支持范围
+
+| 类型 | 支持 | 说明 |
+| ---- | ---- | ---- |
+| 字符串字面量 | ✅ | `label="点我"` |
+| 布尔（无值属性） | ✅ | `<Comp enabled />` → `enabled=true` |
+| 数字字面量 | ➖ | 作为字符串，后续可解析 |
+| 表达式 `{...}` | ❌ | 安全策略禁止 |
+| 对象/数组 | ❌ | 解析成本与安全风险较高 |
+
+## 组件注册表
+
+组件通过一个集中 `registry` 暴露：
+
+```ts
+export const components = {
+  SimpleButton,
+  OcrPlayground,
+  // alias 也可加入： simplebutton: SimpleButton
+};
+```
+
+渲染时传入 `rehype-react`：
+
+```ts
+rehypeReact({ components })
+```
+
+## 性能与缓存
+
+- 小型文档同步处理即可；大型文档可考虑异步 `process` + 任务队列。
+- 可缓存 `unified()` 创建的 processor（当前没有状态污染）。
+- 若未来支持用户动态编辑 / 热替换，可对同一文档开启增量更新（待调研）。
+
+## 安全考量
+
+| 维度 | 策略 |
+| ---- | ---- |
+| Import / ESM | 过滤或忽略 `mdxjsEsm` |
+| HTML 注入 | `allowDangerousHtml: false` |
+| 函数执行 | 禁止表达式属性；使用 action 字符串映射 |
+| 任意组件 | 白名单注册，未知标签渲染为空占位 |
+
+## 迁移计划（里程碑）
+
+| 阶段 | 目标 |
+| ---- | ---- |
+| M1 | 最小可行：按钮/Playground 渲染 |
+| M2 | Mermaid / 代码高亮融合 |
+| M3 | Action 映射与更丰富组件 |
+| M4 | 搜索、分页增强、i18n 版本化 |
+
+## 后续方向
+
+- 解析数字/JSON 属性增强表达力。
+- 组件级 Action 映射：`<SimpleButton action="copy" />`。
+- 支持外部主题/暗色模式联动。
+
+---
+如需深入调试，请参考“开发者 → MDX 调试记录”。

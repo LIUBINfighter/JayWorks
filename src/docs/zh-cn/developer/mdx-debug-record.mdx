@@ -1,0 +1,39 @@
+---
+title: MDX 调试记录
+description: 原 mdx-component-debug.mdx 精炼后的问题分析与修复总结。
+updated: 2025-09-28
+---
+
+记录 `<SimpleButton />` 等组件最初被降级为空 `<div>` 的根因与修复策略（源文档：mdx-component-debug.mdx）。
+
+## 根因
+
+`remark-rehype` 未透传 `mdxJsx*` 节点 → 节点语义丢失 → rehype-react 无法匹配组件 → 回退普通元素。
+
+## 修复要点
+
+| 步骤 | 说明 |
+| ---- | ---- |
+| passThrough | 在 remark-rehype 中加入 `mdxJsx*` / `mdxjsEsm` |
+| 自定义插件 | 将 mdxJsx* 转换为标准 element 节点 |
+| 属性白名单 | 仅允许字面量、布尔短属性 |
+| 组件白名单 | registry 暴露安全组件；未知标签忽略 |
+
+## 属性支持矩阵
+
+| 类型 | 支持 |
+| ---- | ---- |
+| 字符串 | ✅ |
+| 布尔（无值） | ✅ |
+| 数字 | 作为字符串（待增强） |
+| 表达式 | ❌ |
+| 对象/数组 | ❌ |
+
+## 仍在规划
+
+- Action 字符串映射（降低函数传递需求）。
+- 数字/JSON 属性安全解析。
+- Processor 缓存与性能测量。
+
+---
+更多上下文请参考“开发者 → 渲染管线”。
