@@ -17,6 +17,14 @@ export default class MyPlugin extends Plugin {
 
 		this.registerView('my-item-view', (leaf) => new MyItemView(leaf));
 
+		// Add ribbon icon to open the view
+		this.addRibbonIcon('book-open', 'Open My Item View', () => {
+			this.app.workspace.getLeaf(true).setViewState({
+				type: 'my-item-view',
+				active: true,
+			});
+		});
+
 		this.addCommand({
 			id: 'open-my-item-view',
 			name: 'Open My Item View',
