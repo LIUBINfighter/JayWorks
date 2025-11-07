@@ -10,6 +10,8 @@ on:
 jobs:
     lint-and-build:
         runs-on: ubuntu-latest
+        # Skip CI if the commit is from github-actions[bot] (auto-formatting)
+        if: github.actor != 'github-actions[bot]'
         permissions:
             contents: write
 
@@ -47,6 +49,8 @@ jobs:
     codeql-analysis:
         name: CodeQL Analysis
         runs-on: ubuntu-latest
+        # Skip CI if the commit is from github-actions[bot] (auto-formatting)
+        if: github.actor != 'github-actions[bot]'
         permissions:
             contents: read
             actions: read
