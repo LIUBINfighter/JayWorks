@@ -19,24 +19,37 @@ export default class MyPlugin extends Plugin {
 
 		// Add ribbon icon to open the view
 		this.addRibbonIcon('book-open', 'Open My Item View', () => {
-			this.app.workspace.getLeaf(true).setViewState({
-				type: 'my-item-view',
-				active: true,
-			});
+			this.activateView();
 		});
 
 		this.addCommand({
 			id: 'open-my-item-view',
 			name: 'Open My Item View',
 			callback: () => {
-				this.app.workspace.getLeaf(true).setViewState({
-					type: 'my-item-view',
-					active: true,
-				});
+				this.activateView();
 			}
 		});
 
 		this.addSettingTab(new JayWorksSettingTab(this.app, this));
+	}
+
+	async activateView() {
+		const { workspace } = this.app;
+		
+		// Check if the view is already open
+		let leaf = workspace.getLeavesOfType('my-item-view')[0];
+		
+		if (!leaf) {
+			// If not open, create a new leaf and open the view
+			leaf = workspace.getLeaf(true);
+			await leaf.setViewState({
+				type: 'my-item-view',
+				active: true,
+			});
+		}
+		
+		// Reveal and focus the leaf
+		workspace.revealLeaf(leaf);
 	}
 
 	onunload() {
