@@ -27,7 +27,7 @@ function ensure() {
   try {
     hljs.registerLanguage("tsx", ts);
     hljs.registerLanguage("jsx", ts);
-  } catch (_) {
+  } catch {
     /* ignore duplicate */
   }
   hljs.registerLanguage("js", js);
@@ -49,13 +49,13 @@ export function highlight(code: string, lang?: string): { __html: string } {
   if (lang && hljs.getLanguage(lang)) {
     try {
       return { __html: hljs.highlight(code, { language: lang }).value };
-    } catch (e) {
+    } catch {
       /* fallback below */
     }
   }
   try {
     return { __html: hljs.highlightAuto(code).value };
-  } catch (e) {
+  } catch {
     return { __html: escapeHtml(code) };
   }
 }
@@ -72,7 +72,7 @@ export function highlightElement(el: HTMLElement, langHint?: string) {
     // @ts-ignore
     const lnb = hljs.lineNumbersBlock || (hljs.default && hljs.default.lineNumbersBlock);
     if (typeof lnb === "function") lnb(el);
-  } catch (e) {
+  } catch {
     /* ignore */
   }
 }

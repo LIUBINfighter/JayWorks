@@ -68,7 +68,7 @@ function rehypeCodeBlockToComponent() {
           if (lang !== "mermaid") {
             try {
               html = renderHighlightedHtml(codeText, lang, { highlightLines }).html;
-            } catch (e) {
+            } catch {
               /* ignore */
             }
           }
