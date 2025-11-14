@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { DocRecord } from '../docs/types';
+import React, { useMemo } from "react";
+import { DocRecord } from "../docs/types";
 
 export interface FooterMetaProps {
   doc?: DocRecord;
@@ -35,13 +35,13 @@ export const FooterMeta: React.FC<FooterMetaProps> = ({
   hideWhenNoUpdated = false,
   showReadingTime = true,
   formatReadingTime = (m) => `阅读 ${m} 分钟`,
-  formatUpdated = (ts) => `更新 ${new Date(ts).toISOString().slice(0,10)}`,
+  formatUpdated = (ts) => `更新 ${new Date(ts).toISOString().slice(0, 10)}`,
   wordCounter,
   className,
   style,
 }) => {
   const meta = doc?.meta;
-  const raw = doc?.raw || '';
+  const raw = doc?.raw || "";
 
   const { words, minutes } = useMemo(() => {
     if (!raw) return { words: 0, minutes: 0 };
@@ -54,10 +54,14 @@ export const FooterMeta: React.FC<FooterMetaProps> = ({
   if (hideWhenNoUpdated && showUpdated && !hasUpdated && !showReadingTime) return null;
 
   return (
-    <div className={"jw-footer-meta" + (className ? ` ${className}` : '')} style={style} title={words ? `约 ${words} 词` : undefined}>
+    <div
+      className={"jw-footer-meta" + (className ? ` ${className}` : "")}
+      style={style}
+      title={words ? `约 ${words} 词` : undefined}
+    >
       {showUpdated && hasUpdated && <span>{formatUpdated(meta!.updated!)}</span>}
       {showReadingTime && (
-        <span style={{ marginLeft: (showUpdated && hasUpdated) ? 8 : 0 }}>
+        <span style={{ marginLeft: showUpdated && hasUpdated ? 8 : 0 }}>
           {formatReadingTime(minutes, words)}
         </span>
       )}
@@ -66,8 +70,11 @@ export const FooterMeta: React.FC<FooterMetaProps> = ({
 };
 
 function defaultWordCounter(raw: string): number {
-  const plain = raw.replace(/```[\s\S]*?```/g,'');
-  return plain.replace(/[#>*`\\\-\n\r]/g,' ').split(/\s+/).filter(Boolean).length;
+  const plain = raw.replace(/```[\s\S]*?```/g, "");
+  return plain
+    .replace(/[#>*`\\\-\n\r]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean).length;
 }
 
 export default FooterMeta;

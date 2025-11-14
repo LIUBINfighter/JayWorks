@@ -1,17 +1,23 @@
-import { DocRegistry, DocRecord, DocMeta } from './types';
-import { renderMdxToReact } from '../utils/unifiedMdx';
-import { getComponentMap } from '../components/registry';
-import { NAV_GROUPS, MDX_SOURCES, NavEntry } from './navigation';
+import { DocRegistry, DocRecord, DocMeta } from "./types";
+import { renderMdxToReact } from "../utils/unifiedMdx";
+import { getComponentMap } from "../components/registry";
+import { NAV_GROUPS, MDX_SOURCES, NavEntry } from "./navigation";
 
 // ---------------- Registry with declarative navigation ----------------
 const recordMap = new Map<string, DocRecord>();
 
 function normalizeMdx(mod: any, id: string): string {
-  if (typeof mod === 'string') return mod;
+  if (typeof mod === "string") return mod;
   return `MDX import '${id}' was not loaded as raw text. Got type: ${typeof mod}`;
 }
 
-function registerDoc(groupId: string, docId: string, file: string, label?: string, draft?: boolean) {
+function registerDoc(
+  groupId: string,
+  docId: string,
+  file: string,
+  label?: string,
+  draft?: boolean,
+) {
   if (draft) return;
   const rawModule = MDX_SOURCES[docId];
   if (!rawModule) {
@@ -26,17 +32,17 @@ function registerDoc(groupId: string, docId: string, file: string, label?: strin
     id: docId,
     title: docId,
     slug: docId,
-    sourceType: 'embedded',
+    sourceType: "embedded",
     filePath: file,
     groupId,
     navLabel: label,
   };
   const raw = normalizeMdx(rawModule, docId);
-  recordMap.set(docId, { meta, raw, status: 'idle' });
+  recordMap.set(docId, { meta, raw, status: "idle" });
 }
 
 function walkEntries(groupId: string, entry: NavEntry) {
-  if ((entry as any).type === 'category') {
+  if ((entry as any).type === "category") {
     const cat: any = entry;
     if (cat.draft) return;
     for (const doc of cat.items) registerDoc(groupId, doc.id, doc.file, doc.label, doc.draft);
@@ -57,28 +63,27 @@ for (const group of NAV_GROUPS) {
   const LOCALE_RE = /^[a-z]{2}(?:-[A-Z]{2})?$/;
   for (const key of Object.keys(MDX_SOURCES)) {
     if (recordMap.has(key)) continue; // 已经注册（在导航里）
-    const parts = key.split('.');
+    const parts = key.split(".");
     if (parts.length < 2) continue; // 没有 locale 后缀
     const locale = parts[parts.length - 1];
     if (!LOCALE_RE.test(locale)) continue; // 尾段不是合法 locale
-    const canonical = parts.slice(0, -1).join('.');
+    const canonical = parts.slice(0, -1).join(".");
     if (!recordMap.has(canonical)) continue; // 仅在主文档存在时才注册变体
     const base = recordMap.get(canonical)!;
     // 推导变体路径：如果 canonical 在 zh-cn/ 下，替换为 <locale>/ 前缀；否则直接复用
     let derivedPath = base.meta.filePath || key;
     // 特殊处理根 README：README.md -> README.<locale>.md
-    if (canonical === 'readme' && /README\.md$/i.test(derivedPath)) {
+    if (canonical === "readme" && /README\.md$/i.test(derivedPath)) {
       derivedPath = derivedPath.replace(/README\.md$/i, `README.${locale}.md`);
     }
-    if (derivedPath.includes('zh-cn/')) {
+    if (derivedPath.includes("zh-cn/")) {
       derivedPath = derivedPath.replace(/zh-cn\//, `${locale}/`);
-    } else if (derivedPath.startsWith('zh-cn/')) {
+    } else if (derivedPath.startsWith("zh-cn/")) {
       derivedPath = derivedPath.replace(/^zh-cn\//, `${locale}/`);
     }
-    registerDoc(base.meta.groupId || '', key, derivedPath, undefined, false);
+    registerDoc(base.meta.groupId || "", key, derivedPath, undefined, false);
   }
 })();
-
 
 function compile(rec: DocRecord) {
   if (!rec.raw || rec.compiled) return;
@@ -94,31 +99,35 @@ function compile(rec: DocRecord) {
           ? frontmatter.tags.map(String)
           : String(frontmatter.tags).split(/[,;\s]+/);
       } catch (err) {
-        console.warn('tags 解析失败', err);
+        console.warn("tags 解析失败", err);
       }
     }
     // updated / date 字段解析 -> 时间戳 (优先 updated)
     const dateStr = frontmatter.updated || frontmatter.date;
     if (dateStr) {
       const ts = Date.parse(String(dateStr));
-      if (!isNaN(ts)) rec.meta.updated = ts; else console.warn('无法解析日期字段', dateStr);
+      if (!isNaN(ts)) rec.meta.updated = ts;
+      else console.warn("无法解析日期字段", dateStr);
     }
     rec.compiled = { frontmatter, element, parsedAt: Date.now() };
-    rec.status = 'ready';
+    rec.status = "ready";
   } catch (e: any) {
-    rec.status = 'error'; rec.error = e?.message || '解析失败';
+    rec.status = "error";
+    rec.error = e?.message || "解析失败";
   }
 }
 
 // 不再需要动态 provider 初始化
 
 export const docRegistry: DocRegistry = {
-  getDocIds() { return Array.from(recordMap.keys()); },
+  getDocIds() {
+    return Array.from(recordMap.keys());
+  },
   getDoc(id: string) {
     const rec = recordMap.get(id);
     if (!rec) return undefined;
     // 仍保留 idle 状态（未来如果想支持按需加载其它来源）
-    if (rec.status !== 'error') compile(rec);
+    if (rec.status !== "error") compile(rec);
     return rec;
   },
   list() {
@@ -126,14 +135,14 @@ export const docRegistry: DocRegistry = {
     const ordered: DocRecord[] = [];
     for (const group of NAV_GROUPS) {
       for (const entry of group.items) {
-        if ((entry as any).type === 'category') {
+        if ((entry as any).type === "category") {
           const cat: any = entry;
-            if (cat.draft) continue;
-            for (const doc of cat.items) {
-              if (doc.draft) continue;
-              const rec = recordMap.get(doc.id);
-              if (rec) ordered.push(this.getDoc(rec.meta.id)!);
-            }
+          if (cat.draft) continue;
+          for (const doc of cat.items) {
+            if (doc.draft) continue;
+            const rec = recordMap.get(doc.id);
+            if (rec) ordered.push(this.getDoc(rec.meta.id)!);
+          }
         } else {
           const doc: any = entry;
           if (doc.draft) continue;
@@ -143,6 +152,6 @@ export const docRegistry: DocRegistry = {
       }
     }
     return ordered;
-  }
+  },
 };
 // 不再导出 provider 注册（可日后新增）

@@ -12,22 +12,22 @@ Records the root cause of components like `<SimpleButton />` initially being dow
 
 ## Fix Key Points
 
-| Step | Description |
-| ---- | ---- |
-| passThrough | Add `mdxJsx*` / `mdxjsEsm` in remark-rehype |
-| Custom plugin | Convert mdxJsx* to standard element nodes |
-| Property whitelist | Only allow literals, boolean short attributes |
+| Step                | Description                                            |
+| ------------------- | ------------------------------------------------------ |
+| passThrough         | Add `mdxJsx*` / `mdxjsEsm` in remark-rehype            |
+| Custom plugin       | Convert mdxJsx\* to standard element nodes             |
+| Property whitelist  | Only allow literals, boolean short attributes          |
 | Component whitelist | Registry exposes safe components; unknown tags ignored |
 
 ## Property Support Matrix
 
-| Type | Supported |
-| ---- | ---- |
-| Strings | ✅ |
-| Booleans (valueless) | ✅ |
-| Numbers | As strings (pending enhancement) |
-| Expressions | ❌ |
-| Objects/Arrays | ❌ |
+| Type                 | Supported                        |
+| -------------------- | -------------------------------- |
+| Strings              | ✅                               |
+| Booleans (valueless) | ✅                               |
+| Numbers              | As strings (pending enhancement) |
+| Expressions          | ❌                               |
+| Objects/Arrays       | ❌                               |
 
 ## Still in Planning
 
@@ -36,4 +36,5 @@ Records the root cause of components like `<SimpleButton />` initially being dow
 - Processor caching and performance measurement.
 
 ---
+
 More context refer to "Developer → Rendering Pipeline".

@@ -1,6 +1,6 @@
-import SimpleButton from './SimpleButton';
-import OcrPlayground from './OcrPlayground';
-import CodeBlock from './CodeBlock';
+import SimpleButton from "./SimpleButton";
+import OcrPlayground from "./OcrPlayground";
+import CodeBlock from "./CodeBlock";
 
 // Central component whitelist for MDX rendering.
 export function getComponentMap() {

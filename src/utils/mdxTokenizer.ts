@@ -8,12 +8,12 @@ export interface FrontmatterResult {
 }
 
 export interface MarkdownToken {
-  type: 'markdown';
+  type: "markdown";
   content: string;
 }
 
 export interface ComponentToken {
-  type: 'component';
+  type: "component";
   name: string;
   props: Record<string, string>;
   raw: string; // original raw tag
@@ -35,19 +35,22 @@ export function parseFrontmatter(raw: string): FrontmatterResult {
   const yaml = m[1];
   const body = m[2];
   const frontmatter: Record<string, any> = {};
-  yaml.split('\n').forEach(line => {
-    const idx = line.indexOf(':');
+  yaml.split("\n").forEach((line) => {
+    const idx = line.indexOf(":");
     if (idx === -1) return;
     const key = line.slice(0, idx).trim();
     if (!key) return;
     const valueRaw = line.slice(idx + 1).trim();
-    const cleaned = valueRaw.replace(/^['"]|['"]$/g, '');
+    const cleaned = valueRaw.replace(/^['"]|['"]$/g, "");
     frontmatter[key] = cleaned;
   });
   return { frontmatter, body };
 }
 
-interface Range { start: number; end: number }
+interface Range {
+  start: number;
+  end: number;
+}
 
 /**
  * Identify fenced code blocks ``` ... ``` and record their absolute string ranges.
@@ -81,7 +84,7 @@ function collectCodeFences(body: string): Range[] {
 }
 
 function isInsideFenced(pos: number, fences: Range[]): boolean {
-  return fences.some(r => pos >= r.start && pos < r.end);
+  return fences.some((r) => pos >= r.start && pos < r.end);
 }
 
 /**
@@ -100,7 +103,7 @@ export function tokenizeComponents(body: string): Token[] {
     if (isInsideFenced(start, fences)) continue; // skip inside code fences
     // push markdown before
     if (start > lastIndex) {
-      tokens.push({ type: 'markdown', content: body.slice(lastIndex, start) });
+      tokens.push({ type: "markdown", content: body.slice(lastIndex, start) });
     }
     // parse attributes
     const props: Record<string, string> = {};
@@ -108,14 +111,14 @@ export function tokenizeComponents(body: string): Token[] {
     let am: RegExpExecArray | null;
     while ((am = ATTR_RE.exec(attrStr))) {
       const key = am[1];
-      const val = (am[2] ?? am[3] ?? '').trim();
+      const val = (am[2] ?? am[3] ?? "").trim();
       props[key] = val;
     }
-    tokens.push({ type: 'component', name, props, raw });
+    tokens.push({ type: "component", name, props, raw });
     lastIndex = start + raw.length;
   }
   if (lastIndex < body.length) {
-    tokens.push({ type: 'markdown', content: body.slice(lastIndex) });
+    tokens.push({ type: "markdown", content: body.slice(lastIndex) });
   }
   return tokens;
 }

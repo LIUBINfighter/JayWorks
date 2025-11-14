@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { docsRegistry } from '../docs/combinedRegistry';
+import React, { useState, useEffect } from "react";
+import { docsRegistry } from "../docs/combinedRegistry";
 
 interface LocaleSwitcherProps {
   onChange?: (locale: string) => void;
@@ -24,9 +24,15 @@ export const LocaleSwitcher: React.FC<LocaleSwitcherProps> = ({ onChange, locale
   return (
     <div className="jw-locale-switcher" title="切换语言">
       <select value={active} onChange={handleChange} className="jw-locale-select">
-        {list.map(l => <option key={l} value={l}>{l}</option>)}
+        {list.map((l) => (
+          <option key={l} value={l}>
+            {l}
+          </option>
+        ))}
       </select>
-      {active !== docsRegistry.getDefaultLocale() && <span className="jw-locale-badge">{active}</span>}
+      {active !== docsRegistry.getDefaultLocale() && (
+        <span className="jw-locale-badge">{active}</span>
+      )}
     </div>
   );
 };

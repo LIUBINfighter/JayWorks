@@ -1,20 +1,20 @@
 // 文档与渲染相关类型定义 (Milestone 0)
-import React from 'react';
+import React from "react";
 
 export interface DocMeta {
-  id: string;              // 唯一 ID（可与 slug 相同）
-  title: string;           // 标题（frontmatter 优先）
-  slug: string;            // 未来可用于路由/hash
+  id: string; // 唯一 ID（可与 slug 相同）
+  title: string; // 标题（frontmatter 优先）
+  slug: string; // 未来可用于路由/hash
   description?: string;
   category?: string;
   order?: number;
   tags?: string[];
-  updated?: number;        // 时间戳（可选）
-  sourceType?: 'embedded' | 'vault'; // 来源类型（后续可扩展 remote/version）
-  filePath?: string;       // 如果来自 vault，记录绝对或相对路径
-  groupId?: string;        // 所属导航组
-  navLabel?: string;       // 导航显示名（覆盖 title）
-  draft?: boolean;         // draft: true 时不渲染
+  updated?: number; // 时间戳（可选）
+  sourceType?: "embedded" | "vault"; // 来源类型（后续可扩展 remote/version）
+  filePath?: string; // 如果来自 vault，记录绝对或相对路径
+  groupId?: string; // 所属导航组
+  navLabel?: string; // 导航显示名（覆盖 title）
+  draft?: boolean; // draft: true 时不渲染
   // ---- Versioning (removed) ----
   /** @deprecated 多版本功能已停用 */
   // version?: string;
@@ -25,9 +25,9 @@ export interface DocMeta {
   /** @deprecated 多版本功能已停用 */
   // isPreRelease?: boolean;
   // ---- i18n (lightweight) ----
-  locale?: string;         // 'zh-CN' | 'en' | etc.
-  canonicalId?: string;    // 语言无关的逻辑 ID（导航使用该 ID）
-  isFallback?: boolean;    // 若当前 locale 缺失，回退到默认语言时标记
+  locale?: string; // 'zh-CN' | 'en' | etc.
+  canonicalId?: string; // 语言无关的逻辑 ID（导航使用该 ID）
+  isFallback?: boolean; // 若当前 locale 缺失，回退到默认语言时标记
 }
 
 export interface CompiledDoc {
@@ -38,9 +38,9 @@ export interface CompiledDoc {
 
 export interface DocRecord {
   meta: DocMeta;
-  raw?: string;            // 懒加载文本
-  compiled?: CompiledDoc;  // 已编译缓存
-  status: 'idle' | 'loading' | 'ready' | 'error';
+  raw?: string; // 懒加载文本
+  compiled?: CompiledDoc; // 已编译缓存
+  status: "idle" | "loading" | "ready" | "error";
   error?: string;
 }
 
@@ -82,8 +82,8 @@ export interface FooterWidgetContext {
 
 export interface FooterWidget {
   id: string;
-  order?: number;                 // 越小越靠左
-  align?: 'left' | 'center' | 'right';
+  order?: number; // 越小越靠左
+  align?: "left" | "center" | "right";
   render(ctx: FooterWidgetContext): React.ReactNode;
   when?(ctx: FooterWidgetContext): boolean; // 返回 false 隐藏
 }

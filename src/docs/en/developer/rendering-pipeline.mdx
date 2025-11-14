@@ -4,7 +4,7 @@ description: Explain how to parse and safely render interactive MDX within an Ob
 updated: 2025-09-28
 ---
 
-import { SimpleButton } from '../../components/SimpleButton';
+import { SimpleButton } from "../../components/SimpleButton";
 
 This page explains from an architectural perspective: why choose unified, how to trim it, and how to safely convert MDX components to React elements. Content sourced from the original `unified-plan.mdx`, with appropriate refinement.
 
@@ -16,13 +16,13 @@ This page explains from an architectural perspective: why choose unified, how to
 
 ## Dependencies and Trimming
 
-| Module | Role |
-| ---- | ---- |
-| remark-parse | Basic Markdown syntax parsing |
-| remark-mdx | Recognize MDX JSX nodes and ESM blocks |
-| remark-frontmatter | (Optional) Handle YAML frontmatter |
-| remark-rehype | Markdown AST → HTML AST (HAST) bridging |
-| rehype-react | HAST → React Elements |
+| Module             | Role                                    |
+| ------------------ | --------------------------------------- |
+| remark-parse       | Basic Markdown syntax parsing           |
+| remark-mdx         | Recognize MDX JSX nodes and ESM blocks  |
+| remark-frontmatter | (Optional) Handle YAML frontmatter      |
+| remark-rehype      | Markdown AST → HTML AST (HAST) bridging |
+| rehype-react       | HAST → React Elements                   |
 
 > Retain and transpile `mdxJsx*` nodes via `passThrough` + custom rehype plugin.
 
@@ -32,12 +32,13 @@ This page explains from an architectural perspective: why choose unified, how to
 unified()
   .use(remarkParse)
   .use(remarkMdx)
-  .use(remarkRehype, { passThrough: ['mdxjsEsm','mdxJsxFlowElement','mdxJsxTextElement'] })
+  .use(remarkRehype, { passThrough: ["mdxjsEsm", "mdxJsxFlowElement", "mdxJsxTextElement"] })
   .use(rehypeMdxJsxToElement)
-  .use(rehypeReact, { createElement: React.createElement, Fragment, components })
+  .use(rehypeReact, { createElement: React.createElement, Fragment, components });
 ```
 
 Where `rehypeMdxJsxToElement` handles:
+
 1. Traverse HAST;
 2. Find `mdxJsx*` nodes;
 3. Extract only literal properties;
@@ -46,13 +47,13 @@ Where `rehypeMdxJsxToElement` handles:
 
 ## Property Support Scope
 
-| Type | Supported | Notes |
-| ---- | ---- | ---- |
-| String literals | ✅ | `label="Click me"` |
-| Booleans (valueless attributes) | ✅ | `<Comp enabled />` → `enabled=true` |
-| Number literals | ➖ | As strings, can parse later |
-| Expressions `{...}` | ❌ | Prohibited by security policy |
-| Objects/Arrays | ❌ | High parsing cost and security risk |
+| Type                            | Supported | Notes                               |
+| ------------------------------- | --------- | ----------------------------------- |
+| String literals                 | ✅        | `label="Click me"`                  |
+| Booleans (valueless attributes) | ✅        | `<Comp enabled />` → `enabled=true` |
+| Number literals                 | ➖        | As strings, can parse later         |
+| Expressions `{...}`             | ❌        | Prohibited by security policy       |
+| Objects/Arrays                  | ❌        | High parsing cost and security risk |
 
 ## Component Registry
 
@@ -69,7 +70,7 @@ export const components = {
 Passed to `rehype-react` during rendering:
 
 ```ts
-rehypeReact({ components })
+rehypeReact({ components });
 ```
 
 ## Performance and Caching
@@ -80,21 +81,21 @@ rehypeReact({ components })
 
 ## Security Considerations
 
-| Dimension | Strategy |
-| ---- | ---- |
-| Import / ESM | Filter or ignore `mdxjsEsm` |
-| HTML injection | `allowDangerousHtml: false` |
-| Function execution | Prohibit expression properties; use action string mapping |
+| Dimension            | Strategy                                                          |
+| -------------------- | ----------------------------------------------------------------- |
+| Import / ESM         | Filter or ignore `mdxjsEsm`                                       |
+| HTML injection       | `allowDangerousHtml: false`                                       |
+| Function execution   | Prohibit expression properties; use action string mapping         |
 | Arbitrary components | Whitelist registration, unknown tags render as empty placeholders |
 
 ## Migration Plan (Milestones)
 
-| Phase | Goal |
-| ---- | ---- |
-| M1 | Minimum viable: button/Playground rendering |
-| M2 | Mermaid / code highlighting integration |
-| M3 | Action mapping and richer components |
-| M4 | Search, pagination enhancements, i18n versioning |
+| Phase | Goal                                             |
+| ----- | ------------------------------------------------ |
+| M1    | Minimum viable: button/Playground rendering      |
+| M2    | Mermaid / code highlighting integration          |
+| M3    | Action mapping and richer components             |
+| M4    | Search, pagination enhancements, i18n versioning |
 
 ## Future Directions
 
@@ -103,4 +104,5 @@ rehypeReact({ components })
 - Support external themes/dark mode linkage.
 
 ---
+
 For in-depth debugging, refer to "Developer → MDX Debug Records".
