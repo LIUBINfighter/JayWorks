@@ -1,5 +1,3 @@
-/* This file is auto generated, to edit this please refer to ./src/styles/*.css  */ 
-/* --- doc.css --- */
 /* --- JayWorks Docs (Milestone 0) --- */
 .jw-docs-layout {
   display: flex;
@@ -700,6 +698,3 @@ body.jw-docs-hide-statusbar .status-bar {
 code.hljs td.hljs-ln-numbers {
   user-select: text;
 }
-
-/* --- main.css --- */
-
