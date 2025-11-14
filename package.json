@@ -14,15 +14,14 @@
 		"lint": "eslint --ext .ts,.js,.tsx,.mdx,.md src --max-warnings=0",
 		"lint:fix": "eslint --ext .ts,.js,.tsx,.mdx,.md src --fix",
 		"format": "prettier --write \"src/**/*.{ts,tsx,js,md,mdx,css}\""
-
 	},
 	"keywords": [],
 	"author": "Jay Bridge",
 	"license": "MPL-2.0",
 	"devDependencies": {
 		"@types/node": "^16.11.6",
-		"@typescript-eslint/eslint-plugin": "5.29.0",
-		"@typescript-eslint/parser": "5.29.0",
+		"@typescript-eslint/eslint-plugin": "^8.46.4",
+		"@typescript-eslint/parser": "^8.46.4",
 		"builtin-modules": "3.3.0",
 		"esbuild": "0.25.12",
 		"eslint": "^8.0.0",
