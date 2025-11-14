@@ -12,7 +12,9 @@
 		"clean": "node ./scripts/clean.js",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
 		"lint": "eslint --ext .ts,.js,.tsx,.mdx,.md src --max-warnings=0",
-		"format": "eslint --ext .ts,.js,.tsx,.mdx,.md src --fix"
+		"lint:fix": "eslint --ext .ts,.js,.tsx,.mdx,.md src --fix",
+		"format":""
+
 	},
 	"keywords": [],
 	"author": "Jay Bridge",
@@ -26,6 +28,7 @@
 		"eslint": "^8.0.0",
 		"eslint-config-prettier": "^8.0.0",
 		"eslint-plugin-mdx": "^2.3.4",
+		"eslint-plugin-obsidianmd": "^0.1.8",
 		"obsidian": "latest",
 		"prettier": "^2.8.0",
 		"tslib": "2.4.0",
