@@ -27,7 +27,7 @@
 		"eslint": "^8.0.0",
 		"eslint-config-prettier": "^8.0.0",
 		"eslint-plugin-mdx": "^2.3.4",
-		"eslint-plugin-obsidianmd": "^0.1.8",
+		"eslint-plugin-obsidianmd": "^0.1.9",
 		"obsidian": "latest",
 		"prettier": "^2.8.0",
 		"tslib": "2.4.0",
